@@ -25,7 +25,11 @@ export const whatsappStatus=(c:ZapiConnection)=>zapi<{connected?:boolean}>(c,'st
 export const whatsappQr=(c:ZapiConnection)=>zapi<{value?:string}>(c,'qr-code/image').then(q=>q.value||null);
 export async function pairingCode(c:ZapiConnection,phone:string){
  const n=toWhatsAppNumber(phone);if(!n)throw Error('Informe seu celular com DDD.');
- const j=await zapi<{value?:string}>(c,'phone-code/'+n);if(!j.value)throw Error('O WhatsApp não gerou o código. Tente de novo.');return j.value;
+ const j=await zapi<{value?:string;challenge?:unknown}>(c,'phone-code/'+n);
+ // WhatsApp accounts protected by a passkey get a WebAuthn challenge instead of a code; a website can't answer it.
+ if(j.challenge)throw Error('Seu WhatsApp pede a chave de acesso (passkey). Use a opção do QR Code abaixo ou remova a chave de acesso em WhatsApp → Configurações → Conta → Chaves de acesso.');
+ if(!j.value){console.log('zapi phone-code without value',Object.keys(j));throw Error('O WhatsApp não gerou o código. Tente de novo.');}
+ return j.value;
 }
 export const disconnectWhatsApp=(c:ZapiConnection)=>zapi(c,'disconnect').catch(()=>null);
 export async function sendWhatsApp(c:ZapiConnection,phone:string,message:string){
