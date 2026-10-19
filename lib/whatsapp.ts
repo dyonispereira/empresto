@@ -7,7 +7,8 @@ export const isPartnerConfigured=()=>!!env.ZAPI_PARTNER_TOKEN;
 async function call<T>(url:string,init:{method?:string;headers?:Record<string,string>;body?:unknown}={}):Promise<T>{
  const r=await fetch(url,{method:init.method||(init.body===undefined?'GET':'POST'),headers:{'Content-Type':'application/json',...init.headers},body:init.body===undefined?undefined:JSON.stringify(init.body),signal:AbortSignal.timeout(15000)});
  const j=await r.json().catch(()=>({})) as T&{error?:string;message?:string};
- if(!r.ok||j.error)throw Error(j.message||j.error||'O serviço de WhatsApp não respondeu. Tente de novo em instantes.');
+ // The status call reports {connected:true,error:'You are already connected.'}, so an error next to connected:true is not a failure.
+ if(!r.ok||(j.error&&(j as {connected?:boolean}).connected!==true))throw Error(j.message||j.error||'O serviço de WhatsApp não respondeu. Tente de novo em instantes.');
  return j;
 }
 const zapi=<T>(c:ZapiConnection,path:string,body?:unknown)=>{const client=c.clientToken||env.ZAPI_CLIENT_TOKEN;return call<T>(`${BASE}${encodeURIComponent(c.instanceId)}/token/${encodeURIComponent(c.token)}/${path}`,{headers:client?{'Client-Token':client}:{},body});};
