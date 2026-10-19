@@ -15,5 +15,7 @@
     "ASAAS_ENVIRONMENT": "production"
   },
   "keep_vars": true,
+  "workers_dev": true,
+  "preview_urls": false,
   "observability": { "enabled": true }
 }
