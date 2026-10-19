@@ -32,5 +32,5 @@ export function checkTransition(before:Portfolio,after:Portfolio){
  if(!removed.some(r=>!r.allocations))for(const p of l.installments){const np=n.installments.find(x=>x.id===p.id);if(!np||np.paid!==p.paid+(allocations.get(p.id)||0))throw Error('Abatimento de parcela inconsistente.');}
  for(const r of l.reversals||[])if(!n.reversals?.some(x=>same(x,r)))throw Error('Histórico de estorno não pode ser alterado.');
  }
- const additions=after.loans.filter(l=>!before.loans.some(x=>x.id===l.id));if(additions.length){const w=walletSummary({...after,loans:after.loans.filter(l=>!additions.includes(l))});if(!w.configured||additions.reduce((s,l)=>s+l.capital,0)>w.available)throw Error('Capital insuficiente para a liberação.');for(const l of additions)if(!after.clients.find(c=>c.id===l.clientId)?.active)throw Error('Cliente inativo.');}
+ const additions=after.loans.filter(l=>!before.loans.some(x=>x.id===l.id));if(additions.length){const w=walletSummary({...after,loans:after.loans.filter(l=>!additions.includes(l))});if(w.configured&&additions.reduce((s,l)=>s+l.capital,0)>w.available)throw Error('Capital insuficiente para a liberação.');for(const l of additions)if(!after.clients.find(c=>c.id===l.clientId)?.active)throw Error('Cliente inativo.');}
 }
