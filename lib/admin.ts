@@ -1,6 +1,7 @@
 import {env} from 'cloudflare:workers';
 import {admin,paidUntil,type Payment} from './billing';
 import {NO_EXPIRY} from './plan';
+import {getCustomPrices} from './pricing';
 import {walletSummary,balance,overdue,type Portfolio} from './model';
 type Row={id:string;name:string;email:string;created_at:string;data:string|null;clients:number|null;status:string|null;payments:string|null;courtesy:string|null;last_seen:string|null;active_seconds:number|null};
 export async function listSubscribers(){
@@ -8,10 +9,10 @@ export async function listSubscribers(){
   json_array_length(json_extract(p.data,'$.clients')) AS clients,s.status,s.payments,c.until AS courtesy,a.last_seen,a.active_seconds
   FROM users u LEFT JOIN portfolios p ON p.owner=u.id LEFT JOIN subscriptions s ON s.owner=u.id LEFT JOIN courtesies c ON c.user_id=u.id LEFT JOIN activity a ON a.user_id=u.id
   ORDER BY u.created_at DESC LIMIT 500`).all<Row>();
- const now=Date.now();
+ const now=Date.now(),prices=await getCustomPrices();
  return results.map(r=>{const paid=r.payments?paidUntil(JSON.parse(r.payments) as Payment[]):0;const courtesy=r.courtesy&&new Date(r.courtesy).getTime()>now?r.courtesy:null;
   const charges=r.payments?(JSON.parse(r.payments) as Payment[]).map(p=>({id:p.id,value:Math.round(p.value*100),status:p.status,dueDate:p.dueDate,paidDate:p.confirmedDate||p.paymentDate||null,invoiceUrl:p.invoiceUrl||null})):[];
-  return {id:r.id,name:r.name,email:r.email,createdAt:r.created_at,clients:r.clients??0,charges,finance:finance(r.data),admin:admin(r.email),paidUntil:paid>now?new Date(paid).toISOString():null,subscription:r.status,courtesyUntil:courtesy,courtesyForever:courtesy===NO_EXPIRY,lastSeen:r.last_seen,activeSeconds:r.active_seconds??0,online:!!r.last_seen&&now-new Date(r.last_seen).getTime()<ONLINE_MS};});
+  return {id:r.id,name:r.name,email:r.email,createdAt:r.created_at,clients:r.clients??0,charges,finance:finance(r.data),admin:admin(r.email),paidUntil:paid>now?new Date(paid).toISOString():null,subscription:r.status,courtesyUntil:courtesy,courtesyForever:courtesy===NO_EXPIRY,customPrice:prices.get(r.id)??null,lastSeen:r.last_seen,activeSeconds:r.active_seconds??0,online:!!r.last_seen&&now-new Date(r.last_seen).getTime()<ONLINE_MS};});
 }
 // The app pings every minute while it is open on screen; a gap above PING_GAP_S starts a new visit, so idle time is not counted.
 const PING_GAP_S=150,ONLINE_MS=150_000;

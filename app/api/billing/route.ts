@@ -1,12 +1,12 @@
 import {env} from 'cloudflare:workers';
 import {getUser} from '../../auth';
 import {gateway,isBillingConfigured,row,sync,type Payment,type Plan,type SubscriptionRow} from '../../../lib/billing';
-import {getTiers,tierFor,getYearlyDiscount,offers,isCycle,CYCLES} from '../../../lib/pricing';
+import {getTiers,tierFor,getYearlyDiscount,offers,isCycle,CYCLES,getCustomPrice} from '../../../lib/pricing';
 import {today,shift} from '../../../lib/model';
 import {planAccess} from '../../../lib/plan';
 const headers={'Cache-Control':'no-store'};
 // Price of the next payment: the tier for the current clients, or the next tier up when the paid one is already full.
-async function targetPrice(owner:string,email:string){const plan=await planAccess(owner,email);if(plan.capacity===null&&plan.allowed)return 0;const tiers=await getTiers();return tierFor(tiers,plan.allowed?(plan.capacity??0)+1:plan.clients??0).price;}
+async function targetPrice(owner:string,email:string){const plan=await planAccess(owner,email);if(plan.capacity===null&&plan.allowed)return 0;const custom=await getCustomPrice(owner);if(custom)return custom;const tiers=await getTiers();return tierFor(tiers,plan.allowed?(plan.capacity??0)+1:plan.clients??0).price;}
 const planOf=(r:SubscriptionRow|null):Plan|null=>r?.plan?JSON.parse(r.plan):null;
 // Monthly tier price the open recurrence was bought for; older rows without a plan fall back to the last charge.
 function boughtTier(r:SubscriptionRow){const plan=planOf(r);if(plan)return plan.tierPrice;const own=(JSON.parse(r.payments) as Payment[]).filter(p=>p.subscription===r.subscription_id||!p.subscription).sort((a,b)=>b.dueDate.localeCompare(a.dueDate));return own[0]?Math.round(own[0].value*100):0;}

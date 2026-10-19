@@ -1,10 +1,10 @@
 'use client';
 import React,{useEffect,useState} from 'react';
-import {ArrowLeft,Gift,LogOut,Search} from 'lucide-react';
+import {ArrowLeft,BadgeDollarSign,Gift,LogOut,Search} from 'lucide-react';
 import PricingEditor from './pricing-editor';
 type Finance={configured:boolean;funded:number;lent:number;available:number;receivable:number;overdue:number;receivedInterest:number;loans:number;openLoans:number};
 type Charge={id:string;value:number;status:string;dueDate:string;paidDate:string|null;invoiceUrl:string|null};
-type Subscriber={id:string;charges:Charge[];name:string;email:string;createdAt:string;clients:number;finance:Finance|null;admin:boolean;paidUntil:string|null;subscription:string|null;courtesyUntil:string|null;courtesyForever:boolean;lastSeen:string|null;activeSeconds:number;online:boolean};
+type Subscriber={id:string;charges:Charge[];name:string;email:string;createdAt:string;clients:number;finance:Finance|null;admin:boolean;paidUntil:string|null;subscription:string|null;courtesyUntil:string|null;courtesyForever:boolean;customPrice:number|null;lastSeen:string|null;activeSeconds:number;online:boolean};
 const date=(iso:string)=>new Date(iso).toLocaleDateString('pt-BR');
 const when=(iso:string)=>new Date(iso).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
 const duration=(sec:number)=>{const m=Math.floor(sec/60),h=Math.floor(m/60);return h?h+'h '+(m%60)+'min':m?m+' min':'menos de 1 min';};
@@ -18,6 +18,7 @@ export default function AdminPanel(){
  async function load(){try{const r=await fetch('/api/admin/users',{cache:'no-store'});const j=await r.json() as {users?:Subscriber[];error?:string};if(!r.ok)throw Error(j.error||'Não foi possível carregar.');setUsers(j.users!);setError('')}catch(e){setError((e as Error).message)}}
  useEffect(()=>{const t=setTimeout(load,0);return()=>clearTimeout(t)},[]);
  async function grant(s:Subscriber,days:number|null){setBusy(s.id);try{const r=await fetch('/api/admin/courtesy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:s.id,days})});const j=await r.json() as {error?:string};if(!r.ok)throw Error(j.error||'Não foi possível salvar.');setToast(days===0?'Cortesia removida de '+s.name+'.':'Cortesia liberada para '+s.name+'.');await load()}catch(e){setToast((e as Error).message)}finally{setBusy('')}}
+ async function setPrice(s:Subscriber,value:string|null){const price=value===null?null:Math.round(Number(value.replace(/\./g,'').replace(',','.'))*100);if(price!==null&&!(price>0)){setToast('Informe o valor, por exemplo 19,90.');return}setBusy(s.id);try{const r=await fetch('/api/admin/custom-price',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:s.id,price})});const j=await r.json() as {error?:string};if(!r.ok)throw Error(j.error||'Não foi possível salvar.');setToast(price===null?s.name+' volta a pagar pela faixa de clientes.':'Preço especial salvo para '+s.name+'.');await load()}catch(e){setToast((e as Error).message)}finally{setBusy('')}}
  async function runCharges(){setBusy('charges');try{const r=await fetch('/api/admin/auto-charge',{method:'POST'});const j=await r.json() as {users?:number;sent?:number;failed?:number;error?:string};if(!r.ok)throw Error(j.error||'Não foi possível executar.');setToast(`${j.sent} enviada(s), ${j.failed} com falha, ${j.users} usuário(s) com cobrança automática.`)}catch(e){setToast((e as Error).message)}finally{setBusy('')}}
  const q=query.trim().toLowerCase();const list=(users||[]).filter(s=>!q||s.name.toLowerCase().includes(q)||s.email.includes(q));
  const count=(f:(s:Subscriber)=>boolean)=>(users||[]).filter(f).length;
@@ -55,7 +56,18 @@ export default function AdminPanel(){
     <div><span>Empréstimos ativos</span><strong>{s.finance.openLoans} de {s.finance.loans}</strong></div>
    </>:<p>Ainda não cadastrou nada na carteira.</p>}</div>
    {!s.admin&&<div className="admin-actions"><Gift size={14}/><span>Cortesia:</span>{OPTIONS.map(([label,days])=><button key={label} disabled={!!busy} onClick={()=>grant(s,days)}>{label}</button>)}{s.courtesyUntil&&<button className="remove" disabled={!!busy} onClick={()=>grant(s,0)}>Remover</button>}</div>}
+   {!s.admin&&<SpecialPrice s={s} busy={!!busy} onSave={setPrice}/>}
   </section>})}</div>
   {toast&&<div className="admin-toast" role="status" onClick={()=>setToast('')}>{toast}</div>}
  </main>;
+}
+
+// Per-account monthly price that replaces the client tiers; the account pays it from the Assinatura tab.
+function SpecialPrice({s,busy,onSave}:{s:Subscriber;busy:boolean;onSave:(s:Subscriber,value:string|null)=>void}){
+ const [value,setValue]=useState(s.customPrice?(s.customPrice/100).toFixed(2).replace('.',','):'');
+ return <div className="admin-actions"><BadgeDollarSign size={14}/><span>Preço especial:</span>
+  <input className="admin-price" inputMode="decimal" placeholder="Pela faixa" value={value} onChange={e=>setValue(e.target.value)} aria-label={'Preço especial por mês para '+s.name}/><span>/mês</span>
+  <button disabled={busy||!value} onClick={()=>onSave(s,value)}>Salvar</button>
+  {s.customPrice&&<button className="remove" disabled={busy} onClick={()=>{setValue('');onSave(s,null)}}>Remover</button>}
+ </div>;
 }
