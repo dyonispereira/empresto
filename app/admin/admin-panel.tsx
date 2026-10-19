@@ -3,8 +3,10 @@ import React,{useEffect,useState} from 'react';
 import Link from 'next/link';
 import {ArrowLeft,Gift,LogOut,Search} from 'lucide-react';
 type Finance={configured:boolean;funded:number;lent:number;available:number;receivable:number;overdue:number;receivedInterest:number;loans:number;openLoans:number};
-type Subscriber={id:string;name:string;email:string;createdAt:string;clients:number;finance:Finance|null;admin:boolean;paidUntil:string|null;subscription:string|null;courtesyUntil:string|null;courtesyForever:boolean};
+type Subscriber={id:string;name:string;email:string;createdAt:string;clients:number;finance:Finance|null;admin:boolean;paidUntil:string|null;subscription:string|null;courtesyUntil:string|null;courtesyForever:boolean;lastSeen:string|null;activeSeconds:number;online:boolean};
 const date=(iso:string)=>new Date(iso).toLocaleDateString('pt-BR');
+const when=(iso:string)=>new Date(iso).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+const duration=(sec:number)=>{const m=Math.floor(sec/60),h=Math.floor(m/60);return h?h+'h '+(m%60)+'min':m?m+' min':'menos de 1 min';};
 const brl=(cents:number)=>(cents/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 function situation(s:Subscriber){if(s.admin)return {label:'Administrador',tone:'ok'};if(s.courtesyUntil)return {label:s.courtesyForever?'Cortesia sem prazo':'Cortesia até '+date(s.courtesyUntil),tone:'gift'};if(s.paidUntil)return {label:'Pago até '+date(s.paidUntil),tone:'ok'};return {label:s.clients>5?'Bloqueado (mais de 5 clientes)':'Gratuito ('+s.clients+' de 5)',tone:s.clients>5?'bad':'free'};}
 const OPTIONS:[string,number|null][]=[['30 dias',30],['90 dias',90],['1 ano',365],['Sem prazo',null]];
@@ -18,7 +20,7 @@ export default function AdminPanel(){
  return <main className="admin-page">
   <div className="admin-top"><Link className="text-btn" href="/"><ArrowLeft size={14}/>Voltar à minha carteira</Link><form method="post" action="/api/auth/sair"><button className="logout-btn" type="submit"><LogOut size={16}/>Sair</button></form></div>
   <div className="eyebrow">PAINEL ADMINISTRATIVO</div><h1>Assinantes do Emprestô</h1>
-  {users&&<div className="admin-metrics"><div><strong>{users.length}</strong><span>contas</span></div><div><strong>{count(s=>!!s.paidUntil&&!s.admin)}</strong><span>pagantes</span></div><div><strong>{count(s=>!!s.courtesyUntil)}</strong><span>cortesias</span></div><div><strong>{count(s=>!s.paidUntil&&!s.courtesyUntil&&!s.admin)}</strong><span>gratuitos</span></div></div>}
+  {users&&<div className="admin-metrics"><div><strong>{users.length}</strong><span>contas</span></div><div><strong>{count(s=>!!s.paidUntil&&!s.admin)}</strong><span>pagantes</span></div><div><strong>{count(s=>s.online)}</strong><span>online agora</span></div><div><strong>{count(s=>!!s.courtesyUntil)}</strong><span>cortesias</span></div><div><strong>{count(s=>!s.paidUntil&&!s.courtesyUntil&&!s.admin)}</strong><span>gratuitos</span></div></div>}
   <label className="admin-search"><Search size={15}/><input placeholder="Buscar por nome ou e-mail" value={query} onChange={e=>setQuery(e.target.value)}/></label>
   {error&&<p className="auth-error">{error} <button className="text-btn" onClick={load}>Tentar novamente</button></p>}
   {!users&&!error&&<p className="auth-note">Carregando…</p>}
@@ -26,6 +28,7 @@ export default function AdminPanel(){
   <div className="admin-list">{list.map(s=>{const st=situation(s);return <section className="admin-row" key={s.id}>
    <div className="admin-who"><strong>{s.name}</strong><span>{s.email}</span><small>Cadastro em {date(s.createdAt)} · {s.clients} cliente{s.clients===1?'':'s'}</small></div>
    <span className={'admin-tag '+st.tone}>{st.label}</span>
+   <div className="admin-activity"><span className={'admin-dot'+(s.online?' on':'')}/>{s.online?<strong>Online agora</strong>:<span>Offline</span>}<span>Último acesso: {s.lastSeen?when(s.lastSeen):'nunca'}</span><span>Tempo de uso: {s.lastSeen?duration(s.activeSeconds):'—'}</span></div>
    <div className="admin-finance">{s.finance?<>
     <div><span>Aporte</span><strong>{s.finance.configured?brl(s.finance.funded):'—'}</strong></div>
     <div><span>Emprestado</span><strong>{brl(s.finance.lent)}</strong></div>

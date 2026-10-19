@@ -5,3 +5,4 @@ export const subscriptions=sqliteTable('subscriptions',{owner:text('owner').prim
 export const users=sqliteTable('users',{id:text('id').primaryKey(),email:text('email').notNull().unique(),name:text('name').notNull(),passwordHash:text('password_hash').notNull(),createdAt:text('created_at').notNull(),failedLogins:integer('failed_logins').notNull().default(0),lockedUntil:text('locked_until')});
 export const sessions=sqliteTable('sessions',{id:text('id').primaryKey(),userId:text('user_id').notNull(),expiresAt:text('expires_at').notNull(),createdAt:text('created_at').notNull()});
 export const courtesies=sqliteTable('courtesies',{userId:text('user_id').primaryKey(),until:text('until').notNull(),note:text('note'),grantedAt:text('granted_at').notNull()});
+export const activity=sqliteTable('activity',{userId:text('user_id').primaryKey(),lastSeen:text('last_seen').notNull(),activeSeconds:integer('active_seconds').notNull().default(0)});
