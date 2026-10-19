@@ -16,6 +16,8 @@
   },
   "keep_vars": true,
   "workers_dev": true,
+  // 12:00 UTC = 09:00 in Brasília: send the automatic WhatsApp charges of the day.
+  "triggers": { "crons": ["0 12 * * *"] },
   "preview_urls": false,
   "observability": { "enabled": true }
 }

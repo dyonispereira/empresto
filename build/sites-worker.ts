@@ -2,6 +2,7 @@ import handler from "vinext/server/fetch-handler";
 import { runWithConnectorBinding } from "../lib/connector-context";
 import type { ConnectorBinding } from "../lib/connector-contract.mjs";
 import { ensureSchema } from "../lib/schema-setup";
+import { runAutoCharges } from "../lib/auto-charge";
 
 export default {
   async fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext<{ CONNECTORS?: ConnectorBinding }>) {
@@ -26,5 +27,15 @@ export default {
     }
     await ensureSchema(env.DB);
     return runWithConnectorBinding(binding, () => handler.fetch(request, env, ctx));
+  },
+  // Cron (wrangler.jsonc): daily WhatsApp reminders for installments due today.
+  async scheduled(_controller: ScheduledController, env: Cloudflare.Env) {
+    await ensureSchema(env.DB);
+    try {
+      console.log("auto-charge", JSON.stringify(await runAutoCharges()));
+    } catch (e) {
+      console.error("auto-charge failed", e instanceof Error ? e.stack : e);
+      throw e;
+    }
   },
 };

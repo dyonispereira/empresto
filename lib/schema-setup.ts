@@ -12,6 +12,8 @@ const STATEMENTS=[
  "CREATE INDEX IF NOT EXISTS subscriptions_subscription_idx ON subscriptions(subscription_id)",
  "CREATE TABLE IF NOT EXISTS courtesies(user_id TEXT PRIMARY KEY NOT NULL,until TEXT NOT NULL,note TEXT,granted_at TEXT NOT NULL)",
  "CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY NOT NULL,value TEXT NOT NULL)",
+ "CREATE TABLE IF NOT EXISTS auto_charge(user_id TEXT PRIMARY KEY NOT NULL,enabled INTEGER DEFAULT 0 NOT NULL,zapi_instance TEXT,zapi_token TEXT,zapi_client_token TEXT,updated_at TEXT NOT NULL)",
+ "CREATE TABLE IF NOT EXISTS auto_charge_log(owner TEXT NOT NULL,item TEXT NOT NULL,client TEXT NOT NULL,amount INTEGER NOT NULL,due_date TEXT NOT NULL,status TEXT NOT NULL,error TEXT,sent_at TEXT NOT NULL,PRIMARY KEY(owner,item))",
  "CREATE TABLE IF NOT EXISTS activity(user_id TEXT PRIMARY KEY NOT NULL,last_seen TEXT NOT NULL,active_seconds INTEGER DEFAULT 0 NOT NULL)",
 ];
 const COLUMNS=['ALTER TABLE subscriptions ADD COLUMN plan TEXT'];
