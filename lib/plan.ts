@@ -1,3 +1,4 @@
+import {env} from 'cloudflare:workers';
 import {access} from './billing';
 import {readPortfolio} from './persistence';
 // Free plan: up to FREE_CLIENT_LIMIT clients without a paid subscription.
@@ -8,6 +9,11 @@ export const overFreeLimit=(plan:{free:boolean},data:unknown)=>plan.free&&countC
 export async function planAccess(owner:string,email:string){
  const paid=await access(owner,email);
  if(paid.allowed)return {...paid,free:false,clients:null as number|null,limit:FREE_CLIENT_LIMIT};
+ const courtesy=await courtesyUntil(owner);
+ if(courtesy)return {...paid,allowed:true,until:courtesy,courtesy:true,free:false,clients:null as number|null,limit:FREE_CLIENT_LIMIT};
  const row=await readPortfolio(owner);const clients=row?countClients(JSON.parse(row.data)):0;
  return {...paid,allowed:clients<=FREE_CLIENT_LIMIT,free:true,clients,limit:FREE_CLIENT_LIMIT};
 }
+// Free access granted by the administrator, valid while `until` is in the future.
+export const NO_EXPIRY='9999-12-31T23:59:59.000Z';
+export async function courtesyUntil(owner:string){const row=await env.DB!.prepare('SELECT until FROM courtesies WHERE user_id=?').bind(owner).first<{until:string}>();return row&&new Date(row.until).getTime()>Date.now()?row.until:null;}
