@@ -14,6 +14,7 @@ export default function LoginForm({initialMode='entrar'}:{initialMode?:'entrar'|
    <label className="field"><span>E-mail</span><input name="email" type="email" autoComplete="email" required maxLength={200}/></label>
    <label className="field"><span>Senha</span><input name="password" type="password" autoComplete={signup?'new-password':'current-password'} required minLength={signup?8:1} maxLength={200}/>{signup&&<small>Pelo menos 8 caracteres.</small>}</label>
    {signup&&<label className="field"><span>Repita a senha</span><input name="confirm" type="password" autoComplete="new-password" required minLength={8} maxLength={200}/></label>}
+   {signup&&<label className="auth-accept"><input type="checkbox" name="accept" required/><span>Li e aceito os <a href="/termos" target="_blank">Termos de Uso</a> e a <a href="/privacidade" target="_blank">Política de Privacidade</a>.</span></label>}
    {error&&<p className="auth-error" role="alert">{error}</p>}
    <button className="btn auth-submit" type="submit" disabled={busy}>{busy?'Aguarde…':signup?'Criar minha conta':'Entrar'}</button>
   </form>
