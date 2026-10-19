@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import {Wallet,BellRing,MessageCircle,LineChart,CalendarClock,ShieldCheck,Smartphone,ClipboardList,UserPlus,HandCoins,Check,ArrowRight,NotebookPen,AlarmClockOff,Frown,CircleDollarSign} from 'lucide-react';
 import PremiumBg from './premium-bg';
 const SIGNUP='/entrar?modo=cadastrar';
@@ -32,13 +31,13 @@ export default function Landing(){
  return <div className="lp">
   <header className="lp-hero">
    <PremiumBg/>
-   <nav className="lp-nav"><span className="lp-logo"><span className="brand-icon"><Wallet size={20}/></span><span>Emprestô<span className="brand-dot">.</span></span></span><Link className="lp-nav-link" href="/entrar">Entrar</Link></nav>
+   <nav className="lp-nav"><span className="lp-logo"><span className="brand-icon"><Wallet size={20}/></span><span>Emprestô<span className="brand-dot">.</span></span></span><a className="lp-nav-link" href="/entrar">Entrar</a></nav>
    <div className="lp-hero-grid">
     <div className="lp-hero-copy">
      <span className="lp-pill">Controle de empréstimos pessoais</span>
      <h1>Seu dinheiro emprestado sob controle, direto do celular.</h1>
      <p>Saiba quem deve, quanto e quando. O Emprestô organiza seus empréstimos, mostra seus resultados e deixa a cobrança pronta no WhatsApp no dia certo.</p>
-     <div className="lp-cta"><Link className="lp-btn" href={SIGNUP}>Começar grátis<ArrowRight size={18}/></Link><Link className="lp-btn ghost" href="/entrar">Já tenho conta</Link></div>
+     <div className="lp-cta"><a className="lp-btn" href={SIGNUP}>Começar grátis<ArrowRight size={18}/></a><a className="lp-btn ghost" href="/entrar">Já tenho conta</a></div>
      <small className="lp-hint">Grátis até 5 clientes. Sem cartão de crédito.</small>
     </div>
     <div className="lp-phone" aria-hidden="true"><div className="lp-screen">
@@ -69,7 +68,7 @@ export default function Landing(){
 
   <section className="lp-section dark">
    <div className="lp-wa-grid">
-    <div><h2>Cobrança no WhatsApp, sem constrangimento.</h2><p className="lp-lead">No dia do vencimento, a mensagem já está pronta, com o valor da parcela e o seu Pix copia e cola. Você só toca em enviar.</p><Link className="lp-btn" href={SIGNUP}>Quero organizar meus empréstimos<ArrowRight size={18}/></Link></div>
+    <div><h2>Cobrança no WhatsApp, sem constrangimento.</h2><p className="lp-lead">No dia do vencimento, a mensagem já está pronta, com o valor da parcela e o seu Pix copia e cola. Você só toca em enviar.</p><a className="lp-btn" href={SIGNUP}>Quero organizar meus empréstimos<ArrowRight size={18}/></a></div>
     <div className="lp-bubble" aria-hidden="true"><p>Olá, Carlos! Tudo bem? Passando para lembrar da parcela 3 de 6, no valor de <b>R$ 450,00</b>, que vence hoje.</p><p>Pix copia e cola:<br/><code>00020126580014BR.GOV.BCB.PIX…</code></p><small>09:00 ✓✓</small></div>
    </div>
   </section>
@@ -77,8 +76,8 @@ export default function Landing(){
   <section className="lp-section" id="planos">
    <h2>Preço simples</h2>
    <div className="lp-plans">
-    <div className="lp-plan"><h3>Grátis</h3><strong>R$ 0</strong><span>para sempre</span><ul>{['Até 5 clientes','Todos os indicadores','Cobrança pelo WhatsApp','Histórico completo'].map(x=><li key={x}><Check size={16}/>{x}</li>)}</ul><Link className="lp-btn ghost dark-text" href={SIGNUP}>Começar grátis</Link></div>
-    <div className="lp-plan featured"><span className="lp-badge">Mais completo</span><h3>Emprestô Completo</h3><strong>R$ 29,90</strong><span>por mês</span><ul>{['Clientes ilimitados','Tudo do plano grátis','Pagamento por Pix, boleto ou cartão','Cancele quando quiser'].map(x=><li key={x}><Check size={16}/>{x}</li>)}</ul><Link className="lp-btn" href={SIGNUP}>Assinar depois de testar</Link></div>
+    <div className="lp-plan"><h3>Grátis</h3><strong>R$ 0</strong><span>para sempre</span><ul>{['Até 5 clientes','Todos os indicadores','Cobrança pelo WhatsApp','Histórico completo'].map(x=><li key={x}><Check size={16}/>{x}</li>)}</ul><a className="lp-btn ghost dark-text" href={SIGNUP}>Começar grátis</a></div>
+    <div className="lp-plan featured"><span className="lp-badge">Mais completo</span><h3>Emprestô Completo</h3><strong>R$ 29,90</strong><span>por mês</span><ul>{['Clientes ilimitados','Tudo do plano grátis','Pagamento por Pix, boleto ou cartão','Cancele quando quiser'].map(x=><li key={x}><Check size={16}/>{x}</li>)}</ul><a className="lp-btn" href={SIGNUP}>Assinar depois de testar</a></div>
    </div>
   </section>
 
@@ -90,7 +89,7 @@ export default function Landing(){
   <section className="lp-final">
    <PremiumBg/>
    <h2>Seu dinheiro trabalhando, e você no controle.</h2>
-   <Link className="lp-btn" href={SIGNUP}>Criar minha conta grátis<ArrowRight size={18}/></Link>
+   <a className="lp-btn" href={SIGNUP}>Criar minha conta grátis<ArrowRight size={18}/></a>
   </section>
 
   <footer className="lp-footer"><span>© {new Date().getFullYear()} Emprestô · seu app de gestão de empréstimos</span><span>O Emprestô é uma ferramenta de organização. Não oferece crédito nem intermedeia empréstimos.</span></footer>
