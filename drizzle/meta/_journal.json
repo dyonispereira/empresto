@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1792415946672,
+      "tag": "0000_perfect_lady_vermin",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1792418929370,
+      "tag": "0001_unusual_leader",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1792419932630,
+      "tag": "0002_sloppy_daimon_hellstrom",
+      "breakpoints": true
+    }
+  ]
+}

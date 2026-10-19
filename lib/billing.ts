@@ -1,0 +1,18 @@
+import {env} from 'cloudflare:workers';
+export const MONTHLY_PRICE=2990;
+export type Payment={id:string;status:string;value:number;dueDate:string;invoiceUrl?:string;paymentDate?:string;confirmedDate?:string;subscription?:string};
+export const isBillingConfigured=()=>!!env.ASAAS_API_KEY&&env.BILLING_ENABLED==='true';
+export async function gateway(path:string,method='GET',body?:unknown){if(!isBillingConfigured())throw Error('Conecte a conta de pagamentos do Emprestô para ativar assinaturas.');const base=env.ASAAS_ENVIRONMENT==='production'?'https://api.asaas.com/v3':'https://api-sandbox.asaas.com/v3';const r=await fetch(base+path,{method,headers:{access_token:env.ASAAS_API_KEY!,'Content-Type':'application/json','User-Agent':'Empresto/1.0'},body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(20000)});const j:any=await r.json();if(!r.ok)throw Error(j.errors?.[0]?.description||'O provedor não concluiu a operação. Consulte a assinatura antes de tentar novamente.');return j;}
+export function billingStatus(payments:Payment[],providerStatus:string){return providerStatus==='INACTIVE'?'cancelled':paidUntil(payments)>Date.now()?'active':payments.some(p=>p.status==='OVERDUE')?'overdue':'pending';}
+export type SubscriptionRow={owner:string;reference:string;customer_id:string|null;subscription_id:string|null;status:string;method:string|null;payments:string;updated_at:string;lock:string|null};
+export async function row(owner:string){return env.DB!.prepare('SELECT * FROM subscriptions WHERE owner=?').bind(owner).first<SubscriptionRow>();}
+export async function sync(row:SubscriptionRow){if(!row.subscription_id)return row;const sub=await gateway('/subscriptions/'+encodeURIComponent(row.subscription_id));const charges=await gateway('/subscriptions/'+encodeURIComponent(row.subscription_id)+'/payments?limit=100');const payments=(charges.data||[]).map((p:Payment)=>({id:p.id,status:p.status,value:p.value,dueDate:p.dueDate,invoiceUrl:p.invoiceUrl,paymentDate:p.paymentDate,confirmedDate:p.confirmedDate}));const status=billingStatus(payments,sub.status);await env.DB!.prepare('UPDATE subscriptions SET status=?,payments=?,updated_at=? WHERE owner=?').bind(status,JSON.stringify(payments),new Date().toISOString(),row.owner).run();return {...row,status,payments:JSON.stringify(payments)};}
+export function paidUntil(payments:Payment[]){return payments.filter(p=>Math.round(p.value*100)===MONTHLY_PRICE&&['RECEIVED','CONFIRMED'].includes(p.status)).reduce((latest,p)=>{const anchor=[p.dueDate,p.paymentDate,p.confirmedDate].filter(Boolean).sort().at(-1)!;const d=new Date(anchor.slice(0,10)+'T12:00:00Z'),day=d.getUTCDate();d.setUTCDate(1);d.setUTCMonth(d.getUTCMonth()+1);const last=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0)).getUTCDate();d.setUTCDate(Math.min(day,last));return Math.max(latest,d.getTime());},0);}
+export function admin(email:string){return !!env.EMPRESTO_ADMIN_EMAIL&&email.trim().toLowerCase()===env.EMPRESTO_ADMIN_EMAIL.trim().toLowerCase();}
+export async function access(owner:string,email:string){
+ if(admin(email))return {allowed:true,admin:true,until:null};
+ if(env.REQUIRE_SUBSCRIPTION!=='true')return {allowed:true,admin:false,until:null};
+ if(!isBillingConfigured()||env.ASAAS_ENVIRONMENT!=='production')return {allowed:false,admin:false,until:null};
+ let current=await row(owner);if(current?.subscription_id&&current.status!=='cancelled'&&Date.now()-new Date(current.updated_at).getTime()>300000)current=await sync(current);
+ const until=current?paidUntil(JSON.parse(current.payments)):0;return {allowed:until>Date.now(),admin:false,until:until?new Date(until).toISOString():null};
+}

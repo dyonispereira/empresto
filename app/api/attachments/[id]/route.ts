@@ -1,0 +1,3 @@
+import {env} from 'cloudflare:workers';
+import {getChatGPTUser} from '../../../chatgpt-auth';
+export async function GET(req:Request,{params}:{params:Promise<{id:string}>}){const u=await getChatGPTUser();if(!u)return new Response('Não autorizado',{status:401});const {id}=await params;if(!/^[0-9a-f-]{36}$/.test(id))return new Response('Não encontrado',{status:404});const file=await env.BUCKET!.get(`${u.userId}/attachments/${id}`);if(!file)return new Response('Não encontrado',{status:404});return new Response(file.body,{headers:{'Content-Type':file.httpMetadata?.contentType||'application/octet-stream','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Content-Disposition':`inline; filename="documento-${id}.jpg"`}})}
