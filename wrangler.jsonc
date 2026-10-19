@@ -1,0 +1,19 @@
+// Cloudflare Workers configuration for Emprestô.
+// The D1 database and R2 bucket are created automatically on the first deploy.
+// Secrets (ASAAS_API_KEY, ASAAS_WEBHOOK_TOKEN, EMPRESTO_ADMIN_EMAIL) are set in the Cloudflare dashboard.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "empresto",
+  "main": "./build/sites-worker.ts",
+  "compatibility_date": "2026-05-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [{ "binding": "DB", "database_name": "empresto-db" }],
+  "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "empresto-arquivos" }],
+  "vars": {
+    "REQUIRE_SUBSCRIPTION": "true",
+    "BILLING_ENABLED": "true",
+    "ASAAS_ENVIRONMENT": "production"
+  },
+  "keep_vars": true,
+  "observability": { "enabled": true }
+}
