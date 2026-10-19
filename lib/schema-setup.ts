@@ -10,6 +10,7 @@ const STATEMENTS=[
  "CREATE INDEX IF NOT EXISTS sessions_user_idx ON sessions(user_id)",
  "CREATE INDEX IF NOT EXISTS backups_owner_idx ON backups(owner)",
  "CREATE INDEX IF NOT EXISTS subscriptions_subscription_idx ON subscriptions(subscription_id)",
+ "CREATE TABLE IF NOT EXISTS courtesies(user_id TEXT PRIMARY KEY NOT NULL,until TEXT NOT NULL,note TEXT,granted_at TEXT NOT NULL)",
 ];
 let ready:Promise<unknown>|null=null;
 export function ensureSchema(db:D1Database|undefined){
