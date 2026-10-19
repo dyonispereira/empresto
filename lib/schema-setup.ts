@@ -14,9 +14,11 @@ const STATEMENTS=[
  "CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY NOT NULL,value TEXT NOT NULL)",
  "CREATE TABLE IF NOT EXISTS activity(user_id TEXT PRIMARY KEY NOT NULL,last_seen TEXT NOT NULL,active_seconds INTEGER DEFAULT 0 NOT NULL)",
 ];
+const COLUMNS=['ALTER TABLE subscriptions ADD COLUMN plan TEXT'];
 let ready:Promise<unknown>|null=null;
 export function ensureSchema(db:D1Database|undefined){
  if(!db)return Promise.resolve();
- ready??=db.batch(STATEMENTS.map(s=>db.prepare(s))).catch(e=>{ready=null;throw e;});
+ // Columns added after launch: ALTER fails harmlessly once the column exists.
+ ready??=db.batch(STATEMENTS.map(s=>db.prepare(s))).then(()=>Promise.all(COLUMNS.map(c=>db.prepare(c).run().catch(()=>null)))).catch(e=>{ready=null;throw e;});
  return ready;
 }
