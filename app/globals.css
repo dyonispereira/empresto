@@ -48,3 +48,7 @@
 .logout-btn{display:flex;align-items:center;gap:8px;width:100%;margin-top:10px;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:#fff;color:var(--red);font:inherit;font-size:12px;font-weight:600;cursor:pointer}
 .logout-btn:hover{background:#fbeceb}
 .admin-top{display:flex;align-items:center;justify-content:space-between;gap:12px}.admin-top .logout-btn{width:auto;margin:0}
+.sidebar{overflow-y:auto}
+.logout-top{display:flex;align-items:center;gap:6px;border:1px solid var(--border);background:#fff;color:var(--red);border-radius:8px;padding:8px 11px;font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.logout-top:hover{background:#fbeceb}
+@media(max-width:600px){.logout-top span{display:none}.logout-top{padding:8px}}
