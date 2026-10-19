@@ -1,5 +1,7 @@
 import PortfolioApp from './portfolio';
-import {requireUser} from './auth';
+import Landing from './landing';
+import {getUser} from './auth';
 import {admin} from '../lib/billing';
 export const dynamic='force-dynamic';
-export default async function Home(){const user=await requireUser();return <PortfolioApp userName={user.displayName} isAdmin={admin(user.email)}/>}
+// Visitors see the landing page; signed-in users go straight to their wallet.
+export default async function Home(){const user=await getUser();if(!user)return <Landing/>;return <PortfolioApp userName={user.displayName} isAdmin={admin(user.email)}/>}

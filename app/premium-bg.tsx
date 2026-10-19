@@ -1,0 +1,5 @@
+import {Plane,Smartphone,Coins,Banknote,Gem,Crown,TrendingUp,Car,Watch,Diamond} from 'lucide-react';
+// Floating luxury icons: [Icon, left %, size px, duration s, delay s].
+const FLOATERS:[typeof Plane,number,number,number,number][]=[[Coins,6,38,19,0],[Plane,18,46,24,-6],[Banknote,30,42,21,-12],[Smartphone,44,34,18,-3],[Gem,57,36,22,-15],[Crown,70,40,20,-8],[TrendingUp,82,44,23,-2],[Car,93,40,25,-14],[Watch,12,30,17,-10],[Diamond,38,28,20,-17],[Coins,64,30,16,-5],[Banknote,88,34,19,-11],[Plane,50,30,26,-20],[Gem,24,26,18,-7]];
+// Animated green-and-gold backdrop shared by the login screen and the landing page hero.
+export default function PremiumBg(){return <div className="auth-bg" aria-hidden="true"><div className="auth-glow"/>{FLOATERS.map(([Icon,left,size,duration,delay],i)=><span key={i} className="auth-floater" style={{left:left+'%',animationDuration:duration+'s',animationDelay:delay+'s'}}><Icon size={size} strokeWidth={1.4}/></span>)}{Array.from({length:24},(_,i)=><i key={i} className="auth-spark" style={{left:(i*37%100)+'%',top:(i*53%100)+'%',animationDelay:-(i*0.7)+'s'}}/>)}</div>;}
