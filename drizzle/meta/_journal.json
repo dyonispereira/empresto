@@ -43,6 +43,13 @@
       "when": 1792427674034,
       "tag": "0005_activity",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1792429959939,
+      "tag": "0006_subscription_plan",
+      "breakpoints": true
     }
   ]
 }

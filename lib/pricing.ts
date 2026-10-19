@@ -28,3 +28,17 @@ export const tierFor=(tiers:Tier[],clients:number)=>tiers.find(t=>t.upTo===null|
 export const capacityFor=(tiers:Tier[],paidCents:number)=>{let cap=0;for(const t of tiers)if(paidCents>=t.price)cap=t.upTo??Infinity;return cap;};
 export const brlCents=(c:number)=>(c/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 export const tierLabel=(tiers:Tier[],t:Tier)=>{const i=tiers.indexOf(t),from=i?tiers[i-1].upTo!+1:1;return t.upTo===null?`Acima de ${from-1} clientes`:from===1?`Até ${t.upTo} clientes`:`De ${from} a ${t.upTo} clientes`;};
+// Billing periods offered at checkout (Asaas subscription cycles). Only the yearly plan carries a discount.
+export const CYCLES={MONTHLY:{months:1,label:'Mensal'},QUARTERLY:{months:3,label:'Trimestral'},SEMIANNUALLY:{months:6,label:'Semestral'},YEARLY:{months:12,label:'Anual'}} as const;
+export type Cycle=keyof typeof CYCLES;
+export const isCycle=(c:unknown):c is Cycle=>typeof c==='string'&&c in CYCLES;
+export const DEFAULT_YEARLY_DISCOUNT=15;
+export async function getYearlyDiscount(){
+ const row=await env.DB!.prepare("SELECT value FROM settings WHERE key='yearly_discount'").first<{value:string}>();
+ const n=row?Number(row.value):DEFAULT_YEARLY_DISCOUNT;return Number.isInteger(n)&&n>=0&&n<=90?n:DEFAULT_YEARLY_DISCOUNT;
+}
+export async function saveYearlyDiscount(n:unknown){
+ if(!(typeof n==='number'&&Number.isInteger(n)&&n>=0&&n<=90))throw Error('O desconto anual deve ser um número inteiro entre 0 e 90.');
+ await env.DB!.prepare("INSERT INTO settings(key,value) VALUES('yearly_discount',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value").bind(String(n)).run();
+}
+export const offers=(price:number,yearlyDiscount:number)=>(Object.keys(CYCLES) as Cycle[]).map(cycle=>{const {months,label}=CYCLES[cycle],discount=cycle==='YEARLY'?yearlyDiscount:0;return {cycle,label,months,discount,total:Math.round(price*months*(100-discount)/100)};});
