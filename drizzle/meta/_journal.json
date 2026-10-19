@@ -50,6 +50,13 @@
       "when": 1792429959939,
       "tag": "0006_subscription_plan",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1792430878751,
+      "tag": "0007_auto_charge",
+      "breakpoints": true
     }
   ]
 }

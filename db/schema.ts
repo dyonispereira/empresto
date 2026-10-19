@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, primaryKey } from 'drizzle-orm/sqlite-core';
 export const portfolios=sqliteTable('portfolios',{owner:text('owner').primaryKey(),data:text('data').notNull(),revision:integer('revision').notNull().default(1)});
 export const backups=sqliteTable('backups',{id:text('id').primaryKey(),owner:text('owner').notNull(),revision:integer('revision').notNull(),key:text('key').notNull(),createdAt:text('created_at').notNull(),action:text('action').notNull()});
 export const subscriptions=sqliteTable('subscriptions',{owner:text('owner').primaryKey(),reference:text('reference').notNull(),customerId:text('customer_id'),subscriptionId:text('subscription_id'),status:text('status').notNull().default('unconfigured'),method:text('method'),payments:text('payments').notNull().default('[]'),updatedAt:text('updated_at').notNull(),lock:text('lock'),plan:text('plan')});
@@ -7,3 +7,5 @@ export const sessions=sqliteTable('sessions',{id:text('id').primaryKey(),userId:
 export const courtesies=sqliteTable('courtesies',{userId:text('user_id').primaryKey(),until:text('until').notNull(),note:text('note'),grantedAt:text('granted_at').notNull()});
 export const activity=sqliteTable('activity',{userId:text('user_id').primaryKey(),lastSeen:text('last_seen').notNull(),activeSeconds:integer('active_seconds').notNull().default(0)});
 export const settings=sqliteTable('settings',{key:text('key').primaryKey(),value:text('value').notNull()});
+export const autoCharge=sqliteTable('auto_charge',{userId:text('user_id').primaryKey(),enabled:integer('enabled').notNull().default(0),zapiInstance:text('zapi_instance'),zapiToken:text('zapi_token'),zapiClientToken:text('zapi_client_token'),updatedAt:text('updated_at').notNull()});
+export const autoChargeLog=sqliteTable('auto_charge_log',{owner:text('owner').notNull(),item:text('item').notNull(),client:text('client').notNull(),amount:integer('amount').notNull(),dueDate:text('due_date').notNull(),status:text('status').notNull(),error:text('error'),sentAt:text('sent_at').notNull()},t=>[primaryKey({columns:[t.owner,t.item]})]);
