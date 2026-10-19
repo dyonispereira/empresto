@@ -1,4 +1,5 @@
 import {env} from 'cloudflare:workers';
+import {LEGAL_VERSION} from './legal';
 export type User={userId:string;email:string;displayName:string;inspecting?:{admin:string;readOnly:boolean}};
 export const SESSION_COOKIE='__Host-empresto_session';
 // Set while the administrator inspects a subscriber's account: `<userId>.ro` (read only) or `<userId>.rw`.
@@ -23,11 +24,13 @@ async function sha256(value:string){return b64(await crypto.subtle.digest('SHA-2
 const DUMMY_HASH='pbkdf2$100000$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
 type UserRow={id:string;email:string;name:string;password_hash:string;failed_logins:number;locked_until:string|null};
 async function createSession(userId:string){const token=b64(crypto.getRandomValues(new Uint8Array(32)));const now=new Date();const expires=new Date(now.getTime()+SESSION_DAYS*864e5);await env.DB!.prepare('INSERT INTO sessions(id,user_id,expires_at,created_at) VALUES(?,?,?,?)').bind(await sha256(token),userId,expires.toISOString(),now.toISOString()).run();return token;}
-export async function signUp(input:{name:string;email:string;password:string}){
+export async function signUp(input:{name:string;email:string;password:string;accept?:unknown}){
  const name=String(input.name||'').trim().slice(0,120),email=normalizeEmail(input.email);
- if(!name)throw Error('Informe seu nome.');if(!validEmail(email))throw Error('Informe um e-mail válido.');const problem=passwordProblem(input.password);if(problem)throw Error(problem);
+ if(!name)throw Error('Informe seu nome.');if(!validEmail(email))throw Error('Informe um e-mail válido.');const problem=passwordProblem(input.password);if(problem)throw Error(problem);if(!input.accept)throw Error('Aceite os Termos de Uso e a Política de Privacidade para criar a conta.');
  const id=crypto.randomUUID();const r=await env.DB!.prepare('INSERT OR IGNORE INTO users(id,email,name,password_hash,created_at) VALUES(?,?,?,?,?)').bind(id,email,name,await hashPassword(input.password),new Date().toISOString()).run();
  if(r.meta.changes!==1)throw Error('Este e-mail já tem cadastro. Use "Entrar".');
+ // Proof of acceptance: which version of the Termos/Privacidade the user agreed to, and when.
+ await env.DB!.prepare('INSERT INTO settings(key,value) VALUES(?,?)').bind('terms:'+id,LEGAL_VERSION+'|'+new Date().toISOString()).run();
  return createSession(id);
 }
 export async function signIn(input:{email:string;password:string}){

@@ -82,6 +82,6 @@ export default function Landing(){
    <a className="lp-btn" href={SIGNUP}>Criar minha conta<ArrowRight size={18}/></a>
   </section>
 
-  <footer className="lp-footer"><span>© {new Date().getFullYear()} Emprestô · seu app de gestão de empréstimos</span><span>O Emprestô é uma ferramenta de organização. Não oferece crédito nem intermedeia empréstimos.</span></footer>
+  <footer className="lp-footer"><span><a href="/termos">Termos de Uso</a> · <a href="/privacidade">Política de Privacidade</a></span><span>© {new Date().getFullYear()} Emprestô · seu app de gestão de empréstimos</span><span>O Emprestô é uma ferramenta de organização. Não oferece crédito nem intermedeia empréstimos.</span></footer>
  </div>;
 }

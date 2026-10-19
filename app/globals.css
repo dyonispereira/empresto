@@ -158,3 +158,13 @@
 .subscription-invoice .status{margin-top:6px;align-self:flex-start}.subscription-invoice>div{display:flex;flex-direction:column}
 .admin-actions button{display:inline-flex;align-items:center;gap:5px}
 @media(min-width:761px){.shell.inspecting .sidebar{top:52px}}
+.legal{--lp-dark:#06190f;background:#fff;color:var(--ink);min-height:100vh;display:flex;flex-direction:column}
+.legal-head{background:var(--lp-dark);color:#fff;padding:16px}.legal .lp-nav{margin:0 auto}
+.legal-body{max-width:760px;width:100%;margin:0 auto;padding:32px 16px 56px;line-height:1.65;font-size:15px;flex:1}
+.legal-body h1{font-size:30px;letter-spacing:-.8px;margin:0 0 4px}
+.legal-body h2{font-size:19px;margin:32px 0 8px}
+.legal-body ul{padding-left:20px}.legal-body li{margin:6px 0}
+.legal-body a{color:var(--green);text-decoration:underline}
+.legal-date{color:var(--muted);font-size:13px;margin:0 0 20px}
+.lp-footer a{color:inherit;text-decoration:underline}
+.auth-accept{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--muted);line-height:1.4}.auth-accept input{margin-top:2px;flex:none}.auth-accept a{color:inherit;text-decoration:underline}
