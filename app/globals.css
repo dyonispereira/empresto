@@ -45,3 +45,6 @@
 .admin-toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 16px;border-radius:9px;font-size:13px;max-width:calc(100% - 32px);box-sizing:border-box}
 @media(max-width:600px){.admin-metrics{grid-template-columns:repeat(2,1fr)}.admin-row{grid-template-columns:1fr}.admin-tag{justify-self:start}}
 .admin-link{display:flex;align-items:center;gap:8px;margin:0 0 14px;padding:10px 12px;border-radius:9px;background:#e4f3ea;color:var(--green);font-weight:600;font-size:12px;text-decoration:none}
+.logout-btn{display:flex;align-items:center;gap:8px;width:100%;margin-top:10px;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:#fff;color:var(--red);font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.logout-btn:hover{background:#fbeceb}
+.admin-top{display:flex;align-items:center;justify-content:space-between;gap:12px}.admin-top .logout-btn{width:auto;margin:0}
