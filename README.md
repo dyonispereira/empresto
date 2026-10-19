@@ -54,7 +54,7 @@ A integração preparada usa a API Asaas para criar cliente e assinatura mensal 
 
 **Não há conta Asaas ou chave de produção conectada por padrão.** Sem a configuração, a interface informa a pendência e não cria cobranças fictícias. Não é possível afirmar homologação de pagamento real sem credenciais e transações de teste.
 
-Configuração segura: veja `.env.example`. Em Sites, use os segredos do ambiente, nunca o manifest nem código cliente. Habilite `BILLING_ENABLED=true` e `ASAAS_ENVIRONMENT=production` somente depois da homologação. `REQUIRE_SUBSCRIPTION=true` bloqueia o acesso de não administradores sem pagamento real confirmado. A administradora é identificada por `EMPRESTO_ADMIN_EMAIL` autenticado pelo ambiente.
+Configuração segura: veja `.env.example`. Em Sites, use os segredos do ambiente, nunca o manifest nem código cliente. Habilite `BILLING_ENABLED=true` e `ASAAS_ENVIRONMENT=production` somente depois da homologação. `REQUIRE_SUBSCRIPTION=true` limita quem não pagou ao plano gratuito de até 5 clientes (`lib/plan.ts`); a partir do 6º cliente, o servidor exige pagamento real confirmado. A administradora é identificada por `EMPRESTO_ADMIN_EMAIL` autenticado pelo ambiente.
 
 O status pode ser conciliado pela ação **Consultar pagamento**, com verificação direta na API do provedor. Abertura de checkout/retorno não libera acesso. Valores, estados pagos, estornos e expiração são verificados no servidor. O cancelamento impede novas recorrências; o período pago permanece válido.
 
