@@ -38,3 +38,9 @@ export async function sendWhatsApp(c:ZapiConnection,phone:string,message:string)
  const j=await zapi<{zaapId?:string;messageId?:string}>(c,'send-text',{phone:to,message,delayMessage:5});
  return j.messageId||j.zaapId||'';
 }
+// Sends the message with a "Copiar código Pix" button that copies only `code`; if the button send fails, falls back to two plain messages.
+export async function sendWhatsAppWithCopy(c:ZapiConnection,phone:string,message:string,code:string){
+ const to=toWhatsAppNumber(phone);if(!to)throw Error('Celular inválido. Use DDD e número.');
+ try{await zapi(c,'send-button-otp',{phone:to,message,code,buttonText:'Copiar código Pix'});}
+ catch{await sendWhatsApp(c,phone,message);await sendWhatsApp(c,phone,code);}
+}
