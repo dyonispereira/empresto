@@ -11,7 +11,13 @@ Aplicação web em português, otimizada para Android e desktop. Gerencia client
 
 ## Tecnologias
 
-React 19, TypeScript, Vinext/Vite, Cloudflare Workers, D1/SQLite e R2. Autenticação fornecida pelo ambiente Sites; não existe login independente de e-mail/senha neste repositório. A publicação atual é privada. Hospedagem independente exige adaptação da autenticação e dos bindings; não confiar em cabeçalhos de identidade enviados diretamente pela internet.
+React 19, TypeScript, Vinext/Vite, Cloudflare Workers, D1/SQLite e R2. Login próprio por e-mail e senha (`lib/auth.ts`): senhas com PBKDF2, sessão em cookie `HttpOnly` guardada no D1 e bloqueio de 15 minutos após 5 senhas erradas.
+
+## Publicação (Cloudflare Workers)
+
+`wrangler.jsonc` define o Worker `empresto`, o banco D1 `empresto-db` e o bucket R2 `empresto-arquivos`, criados automaticamente no primeiro deploy (o R2 precisa estar ativado na conta). As tabelas são criadas no primeiro acesso (`lib/schema-setup.ts`). Conecte o repositório em Workers & Pages com build `pnpm run build` e deploy `npx wrangler deploy`. Segredos a configurar no painel: `ASAAS_API_KEY`, `ASAAS_WEBHOOK_TOKEN` e `EMPRESTO_ADMIN_EMAIL`. O webhook do Asaas aponta para `/api/billing/webhook` com o mesmo token.
+
+A conta com o e-mail de `EMPRESTO_ADMIN_EMAIL` não paga mensalidade; crie essa conta logo após o primeiro deploy, antes de divulgar o endereço.
 
 ## Executar e testar
 
@@ -54,7 +60,7 @@ O status pode ser conciliado pela ação **Consultar pagamento**, com verificaç
 
 ### Notificações em segundo plano
 
-A publicação privada exige autenticação antes das rotas e não oferece neste código um webhook público pronto para o provedor. Não publicar um endpoint que confie apenas no JSON recebido nem remover autenticação global para resolver isso. Para produção com notificações automáticas, hospedar um receptor de webhook autenticado compatível com a infraestrutura, verificar token/evento, consultar a cobrança na API, deduplicar eventos e atualizar a mesma base autorizada. Esse receptor e a homologação de produção permanecem pendentes. A consulta autenticada no provedor funciona sem depender de um retorno de checkout.
+`POST /api/billing/webhook` recebe os eventos do Asaas. Exige o cabeçalho `asaas-access-token` igual a `ASAAS_WEBHOOK_TOKEN`, não confia no conteúdo do evento e consulta a assinatura na API do Asaas antes de atualizar o status. Repetir o mesmo evento não muda nada.
 
 ## Homologação necessária
 
