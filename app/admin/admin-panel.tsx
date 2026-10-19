@@ -1,6 +1,5 @@
 'use client';
 import React,{useEffect,useState} from 'react';
-import Link from 'next/link';
 import {ArrowLeft,Gift,LogOut,Search} from 'lucide-react';
 type Finance={configured:boolean;funded:number;lent:number;available:number;receivable:number;overdue:number;receivedInterest:number;loans:number;openLoans:number};
 type Subscriber={id:string;name:string;email:string;createdAt:string;clients:number;finance:Finance|null;admin:boolean;paidUntil:string|null;subscription:string|null;courtesyUntil:string|null;courtesyForever:boolean;lastSeen:string|null;activeSeconds:number;online:boolean};
@@ -17,8 +16,10 @@ export default function AdminPanel(){
  async function grant(s:Subscriber,days:number|null){setBusy(s.id);try{const r=await fetch('/api/admin/courtesy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:s.id,days})});const j=await r.json() as {error?:string};if(!r.ok)throw Error(j.error||'Não foi possível salvar.');setToast(days===0?'Cortesia removida de '+s.name+'.':'Cortesia liberada para '+s.name+'.');await load()}catch(e){setToast((e as Error).message)}finally{setBusy('')}}
  const q=query.trim().toLowerCase();const list=(users||[]).filter(s=>!q||s.name.toLowerCase().includes(q)||s.email.includes(q));
  const count=(f:(s:Subscriber)=>boolean)=>(users||[]).filter(f).length;
+ // Plain links: vinext's client-side <Link> navigation fails in production, so pages load normally.
  return <main className="admin-page">
-  <div className="admin-top"><Link className="text-btn" href="/"><ArrowLeft size={14}/>Voltar à minha carteira</Link><form method="post" action="/api/auth/sair"><button className="logout-btn" type="submit"><LogOut size={16}/>Sair</button></form></div>
+  {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+  <div className="admin-top"><a className="text-btn" href="/"><ArrowLeft size={14}/>Voltar à minha carteira</a><form method="post" action="/api/auth/sair"><button className="logout-btn" type="submit"><LogOut size={16}/>Sair</button></form></div>
   <div className="eyebrow">PAINEL ADMINISTRATIVO</div><h1>Assinantes do Emprestô</h1>
   {users&&<div className="admin-metrics"><div><strong>{users.length}</strong><span>contas</span></div><div><strong>{count(s=>!!s.paidUntil&&!s.admin)}</strong><span>pagantes</span></div><div><strong>{count(s=>s.online)}</strong><span>online agora</span></div><div><strong>{count(s=>!!s.courtesyUntil)}</strong><span>cortesias</span></div><div><strong>{count(s=>!s.paidUntil&&!s.courtesyUntil&&!s.admin)}</strong><span>gratuitos</span></div></div>}
   <label className="admin-search"><Search size={15}/><input placeholder="Buscar por nome ou e-mail" value={query} onChange={e=>setQuery(e.target.value)}/></label>
