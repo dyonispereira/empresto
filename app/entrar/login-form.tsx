@@ -17,6 +17,6 @@ export default function LoginForm({initialMode='entrar'}:{initialMode?:'entrar'|
    {error&&<p className="auth-error" role="alert">{error}</p>}
    <button className="btn auth-submit" type="submit" disabled={busy}>{busy?'Aguarde…':signup?'Criar minha conta':'Entrar'}</button>
   </form>
-  <p className="auth-note">{signup?'Comece grátis com até 5 clientes. Para cadastrar mais, assine por R$ 29,90/mês.':'Esqueceu a senha? Fale com o suporte do Emprestô.'}</p>
+  {!signup&&<p className="auth-note">Esqueceu a senha? Fale com o suporte do Emprestô.</p>}
  </section></main>;
 }
