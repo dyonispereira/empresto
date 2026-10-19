@@ -1,18 +1,21 @@
 import {env} from 'cloudflare:workers';
 import {access} from './billing';
 import {readPortfolio} from './persistence';
-// Free plan: up to FREE_CLIENT_LIMIT clients without a paid subscription.
-export const FREE_CLIENT_LIMIT=5;
-export const FREE_LIMIT_ERROR=`O plano gratuito permite até ${FREE_CLIENT_LIMIT} clientes. Assine o Emprestô por R$ 29,90/mês para cadastrar mais.`;
+import {getTiers,tierFor,capacityFor} from './pricing';
+// Accounts pay by tier of clients: the app is open with no clients, and each client beyond what the confirmed payment covers needs the next tier paid first.
+export const LIMIT_ERROR='Você chegou ao limite de clientes do seu plano. Conclua o pagamento para liberar mais clientes.';
 export const countClients=(data:unknown)=>{const clients=(data as {clients?:unknown})?.clients;return Array.isArray(clients)?clients.length:0;};
-export const overFreeLimit=(plan:{free:boolean},data:unknown)=>plan.free&&countClients(data)>FREE_CLIENT_LIMIT;
+// `capacity` null means unlimited (administrator, courtesy, or billing switched off).
+export const overLimit=(plan:{capacity:number|null},data:unknown)=>plan.capacity!==null&&countClients(data)>plan.capacity;
 export async function planAccess(owner:string,email:string){
  const paid=await access(owner,email);
- if(paid.allowed)return {...paid,free:false,clients:null as number|null,limit:FREE_CLIENT_LIMIT};
+ if(paid.admin||env.REQUIRE_SUBSCRIPTION!=='true')return {...paid,allowed:true,courtesy:false,capacity:null as number|null,clients:null as number|null,price:0};
  const courtesy=await courtesyUntil(owner);
- if(courtesy)return {...paid,allowed:true,until:courtesy,courtesy:true,free:false,clients:null as number|null,limit:FREE_CLIENT_LIMIT};
- const row=await readPortfolio(owner);const clients=row?countClients(JSON.parse(row.data)):0;
- return {...paid,allowed:clients<=FREE_CLIENT_LIMIT,free:true,clients,limit:FREE_CLIENT_LIMIT};
+ if(courtesy)return {...paid,allowed:true,until:courtesy,courtesy:true,capacity:null as number|null,clients:null as number|null,price:0};
+ const [tiers,row]=await Promise.all([getTiers(),readPortfolio(owner)]);
+ const clients=row?countClients(JSON.parse(row.data)):0;
+ const capacity=paid.allowed?capacityFor(tiers,paid.paidCents):0;
+ return {...paid,allowed:clients<=capacity,courtesy:false,capacity:capacity===Infinity?null:capacity,clients,price:tierFor(tiers,clients).price};
 }
 // Free access granted by the administrator, valid while `until` is in the future.
 export const NO_EXPIRY='9999-12-31T23:59:59.000Z';

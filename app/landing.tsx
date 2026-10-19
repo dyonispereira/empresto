@@ -1,4 +1,4 @@
-import {Wallet,BellRing,MessageCircle,LineChart,CalendarClock,ShieldCheck,Smartphone,ClipboardList,UserPlus,HandCoins,Check,ArrowRight,NotebookPen,AlarmClockOff,Frown,CircleDollarSign} from 'lucide-react';
+import {Wallet,BellRing,MessageCircle,LineChart,CalendarClock,ShieldCheck,Smartphone,ClipboardList,UserPlus,HandCoins,ArrowRight,NotebookPen,AlarmClockOff,Frown,CircleDollarSign} from 'lucide-react';
 import PremiumBg from './premium-bg';
 const SIGNUP='/entrar?modo=cadastrar';
 const PAINS:[typeof Wallet,string,string][]=[
@@ -16,13 +16,12 @@ const FEATURES:[typeof Wallet,string,string][]=[
  [Smartphone,'Tudo pelo celular','Abre no navegador do celular, sem instalar nada.'],
 ];
 const STEPS:[typeof Wallet,string,string][]=[
- [UserPlus,'Crie sua conta','Grátis, em menos de 1 minuto, só com e-mail e senha.'],
+ [UserPlus,'Crie sua conta','Em menos de 1 minuto, só com e-mail e senha.'],
  [HandCoins,'Cadastre os empréstimos','Cliente, valor, juros e parcelas. O Emprestô calcula o resto.'],
  [BellRing,'Receba no dia certo','Acompanhe os vencimentos e cobre pelo WhatsApp com um toque.'],
 ];
 const FAQ:[string,string][]=[
  ['Preciso instalar algum aplicativo?','Não. O Emprestô abre no navegador do celular ou do computador. Você pode adicionar um atalho na tela inicial.'],
- ['É grátis mesmo?','Sim. Você usa todos os recursos de graça com até 5 clientes. A partir do 6º cliente, a assinatura custa R$ 29,90 por mês.'],
  ['Como funciona a cobrança pelo WhatsApp?','No dia do vencimento, o Emprestô mostra quem precisa pagar e monta a mensagem com o valor e o seu Pix. Você toca em enviar e pronto.'],
  ['Meus clientes veem alguma coisa?','Não. Só você acessa a sua carteira. Seus clientes recebem apenas as mensagens que você enviar.'],
  ['Posso cancelar quando quiser?','Pode. Não há fidelidade nem multa.'],
@@ -37,8 +36,7 @@ export default function Landing(){
      <span className="lp-pill">Controle de empréstimos pessoais</span>
      <h1>Seu dinheiro emprestado sob controle, direto do celular.</h1>
      <p>Saiba quem deve, quanto e quando. O Emprestô organiza seus empréstimos, mostra seus resultados e deixa a cobrança pronta no WhatsApp no dia certo.</p>
-     <div className="lp-cta"><a className="lp-btn" href={SIGNUP}>Começar grátis<ArrowRight size={18}/></a><a className="lp-btn ghost" href="/entrar">Já tenho conta</a></div>
-     <small className="lp-hint">Grátis até 5 clientes. Sem cartão de crédito.</small>
+     <div className="lp-cta"><a className="lp-btn" href={SIGNUP}>Começar agora<ArrowRight size={18}/></a><a className="lp-btn ghost" href="/entrar">Já tenho conta</a></div>
     </div>
     <div className="lp-phone" aria-hidden="true"><div className="lp-screen">
      <div className="lp-screen-top"><span>Visão geral</span><b>Outubro</b></div>
@@ -73,14 +71,6 @@ export default function Landing(){
    </div>
   </section>
 
-  <section className="lp-section" id="planos">
-   <h2>Preço simples</h2>
-   <div className="lp-plans">
-    <div className="lp-plan"><h3>Grátis</h3><strong>R$ 0</strong><span>para sempre</span><ul>{['Até 5 clientes','Todos os indicadores','Cobrança pelo WhatsApp','Histórico completo'].map(x=><li key={x}><Check size={16}/>{x}</li>)}</ul><a className="lp-btn ghost dark-text" href={SIGNUP}>Começar grátis</a></div>
-    <div className="lp-plan featured"><span className="lp-badge">Mais completo</span><h3>Emprestô Completo</h3><strong>R$ 29,90</strong><span>por mês</span><ul>{['Clientes ilimitados','Tudo do plano grátis','Pagamento por Pix, boleto ou cartão','Cancele quando quiser'].map(x=><li key={x}><Check size={16}/>{x}</li>)}</ul><a className="lp-btn" href={SIGNUP}>Assinar depois de testar</a></div>
-   </div>
-  </section>
-
   <section className="lp-section alt">
    <h2>Perguntas frequentes</h2>
    <div className="lp-faq">{FAQ.map(([q,a])=><details key={q}><summary>{q}</summary><p>{a}</p></details>)}</div>
@@ -89,7 +79,7 @@ export default function Landing(){
   <section className="lp-final">
    <PremiumBg/>
    <h2>Seu dinheiro trabalhando, e você no controle.</h2>
-   <a className="lp-btn" href={SIGNUP}>Criar minha conta grátis<ArrowRight size={18}/></a>
+   <a className="lp-btn" href={SIGNUP}>Criar minha conta<ArrowRight size={18}/></a>
   </section>
 
   <footer className="lp-footer"><span>© {new Date().getFullYear()} Emprestô · seu app de gestão de empréstimos</span><span>O Emprestô é uma ferramenta de organização. Não oferece crédito nem intermedeia empréstimos.</span></footer>

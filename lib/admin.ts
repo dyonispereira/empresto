@@ -10,7 +10,8 @@ export async function listSubscribers(){
   ORDER BY u.created_at DESC LIMIT 500`).all<Row>();
  const now=Date.now();
  return results.map(r=>{const paid=r.payments?paidUntil(JSON.parse(r.payments) as Payment[]):0;const courtesy=r.courtesy&&new Date(r.courtesy).getTime()>now?r.courtesy:null;
-  return {id:r.id,name:r.name,email:r.email,createdAt:r.created_at,clients:r.clients??0,finance:finance(r.data),admin:admin(r.email),paidUntil:paid>now?new Date(paid).toISOString():null,subscription:r.status,courtesyUntil:courtesy,courtesyForever:courtesy===NO_EXPIRY,lastSeen:r.last_seen,activeSeconds:r.active_seconds??0,online:!!r.last_seen&&now-new Date(r.last_seen).getTime()<ONLINE_MS};});
+  const charges=r.payments?(JSON.parse(r.payments) as Payment[]).map(p=>({id:p.id,value:Math.round(p.value*100),status:p.status,dueDate:p.dueDate,paidDate:p.confirmedDate||p.paymentDate||null,invoiceUrl:p.invoiceUrl||null})):[];
+  return {id:r.id,name:r.name,email:r.email,createdAt:r.created_at,clients:r.clients??0,charges,finance:finance(r.data),admin:admin(r.email),paidUntil:paid>now?new Date(paid).toISOString():null,subscription:r.status,courtesyUntil:courtesy,courtesyForever:courtesy===NO_EXPIRY,lastSeen:r.last_seen,activeSeconds:r.active_seconds??0,online:!!r.last_seen&&now-new Date(r.last_seen).getTime()<ONLINE_MS};});
 }
 // The app pings every minute while it is open on screen; a gap above PING_GAP_S starts a new visit, so idle time is not counted.
 const PING_GAP_S=150,ONLINE_MS=150_000;
