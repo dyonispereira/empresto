@@ -1,6 +1,6 @@
 import {env} from 'cloudflare:workers';
 import {type Portfolio,today,balance} from './model';
-import {pixPayload,chargeMessage} from './pix';
+import {whatsappCharge} from './pix';
 import {type ZapiConnection,sendWhatsApp} from './whatsapp';
 type Row={enabled:number;zapi_instance:string|null;zapi_token:string|null;zapi_client_token:string|null};
 const connectionOf=(r:Row|null):ZapiConnection|null=>r?.zapi_instance&&r.zapi_token?{instanceId:r.zapi_instance,token:r.zapi_token,clientToken:r.zapi_client_token}:null;
@@ -32,7 +32,7 @@ export async function runAutoCharges(){
    if(!claimed.meta.changes)continue;
    let status='sent',error:string|null=null;
    if(sent+failed)await pause();
-   try{await sendWhatsApp(conn,item.phone,chargeMessage(pix,item.client,item.amount,item.date,pixPayload(pix,item.amount)));sent++;}
+   try{for(const m of whatsappCharge(pix,item.client,item.amount,item.date))await sendWhatsApp(conn,item.phone,m);sent++;}
    catch(e){status='failed';error=(e as Error).message.slice(0,300);failed++;}
    await env.DB!.prepare('UPDATE auto_charge_log SET status=?,error=? WHERE owner=? AND item=?').bind(status,error,r.owner,item.key).run();
   }
