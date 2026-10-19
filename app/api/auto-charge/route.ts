@@ -1,6 +1,6 @@
 import {getUser} from '../../auth';
 import {autoChargeSettings,setAutoCharge,setConnection,autoChargeLog} from '../../../lib/auto-charge';
-import {isPartnerConfigured,createInstance,pairingCode,whatsappStatus,whatsappQr,disconnectWhatsApp,sendWhatsApp} from '../../../lib/whatsapp';
+import {isPartnerConfigured,createInstance,pairingCode,whatsappStatus,whatsappQr,disconnectWhatsApp,sendWhatsAppWithCopy} from '../../../lib/whatsapp';
 import {readPortfolio} from '../../../lib/persistence';
 import {whatsappCharge} from '../../../lib/pix';
 import {today,type Portfolio} from '../../../lib/model';
@@ -30,7 +30,7 @@ export async function POST(req:Request){
   else if(input.action==='qr'){if(!connection)throw Error('Gere o código de conexão primeiro.');return Response.json({...await state(u.userId,u.email),qr:await whatsappQr(connection)},{headers});}
   else if(input.action==='status'){}
   else if(input.action==='disconnect'){if(connection)await disconnectWhatsApp(connection);await setAutoCharge(u.userId,false);}
-  else if(input.action==='test'){if(!connection)throw Error('Conecte seu WhatsApp primeiro.');const row=await readPortfolio(u.userId);const pix=row?(JSON.parse(row.data) as Portfolio).pixSettings:undefined;if(!pix?.key)throw Error('Cadastre sua chave em Meu Pix para testar a mensagem de cobrança.');const [text,code]=whatsappCharge(pix,'Cliente teste',1000,today());await sendWhatsApp(connection,String(input.phone||''),'[Teste] '+text);await sendWhatsApp(connection,String(input.phone||''),code);}
+  else if(input.action==='test'){if(!connection)throw Error('Conecte seu WhatsApp primeiro.');const row=await readPortfolio(u.userId);const pix=row?(JSON.parse(row.data) as Portfolio).pixSettings:undefined;if(!pix?.key)throw Error('Cadastre sua chave em Meu Pix para testar a mensagem de cobrança.');const [text,code]=whatsappCharge(pix,'Cliente teste',1000,today());await sendWhatsAppWithCopy(connection,String(input.phone||''),'[Teste] '+text,code);}
   else throw Error('Ação inválida.');
   return Response.json(await state(u.userId,u.email),{headers});
  }catch(e){return Response.json({error:(e as Error).message},{status:400,headers})}
