@@ -149,3 +149,12 @@
 .pair-steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;line-height:1.45}
 .auto-charge-qr{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}.auto-charge-qr img{width:220px;height:220px;border-radius:12px;border:1px solid var(--border)}
 .auto-charge-test{display:flex;gap:8px;flex-wrap:wrap}.auto-charge-test input{flex:1;min-width:160px;border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.inspect-banner{position:sticky;top:0;z-index:60;display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 16px;background:#3b2f6b;color:#fff;font-size:13px}
+.inspect-banner.editing{background:#8a3b2f}
+.inspect-banner span{flex:1;min-width:200px}
+.inspect-banner form{margin:0}
+.inspect-banner button{border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;border-radius:6px;padding:6px 10px;font:inherit;cursor:pointer}
+.inspect-banner button:hover{background:rgba(255,255,255,.12)}
+.subscription-invoice .status{margin-top:6px;align-self:flex-start}.subscription-invoice>div{display:flex;flex-direction:column}
+.admin-actions button{display:inline-flex;align-items:center;gap:5px}
+@media(min-width:761px){.shell.inspecting .sidebar{top:52px}}

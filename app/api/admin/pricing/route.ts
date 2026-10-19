@@ -1,4 +1,4 @@
-import {getUser} from '../../../auth';
+import {getRealUser as getUser} from '../../../auth';
 import {admin} from '../../../../lib/billing';
 import {getTiers,saveTiers,getYearlyDiscount,saveYearlyDiscount} from '../../../../lib/pricing';
 const headers={'Cache-Control':'no-store'};

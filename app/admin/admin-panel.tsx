@@ -1,6 +1,6 @@
 'use client';
 import React,{useEffect,useState} from 'react';
-import {ArrowLeft,BadgeDollarSign,Gift,LogOut,Search} from 'lucide-react';
+import {ArrowLeft,BadgeDollarSign,Eye,Gift,KeyRound,LogOut,Search} from 'lucide-react';
 import PricingEditor from './pricing-editor';
 type Finance={configured:boolean;funded:number;lent:number;available:number;receivable:number;overdue:number;receivedInterest:number;loans:number;openLoans:number};
 type Charge={id:string;value:number;status:string;dueDate:string;paidDate:string|null;invoiceUrl:string|null};
@@ -19,6 +19,8 @@ export default function AdminPanel(){
  useEffect(()=>{const t=setTimeout(load,0);return()=>clearTimeout(t)},[]);
  async function grant(s:Subscriber,days:number|null){setBusy(s.id);try{const r=await fetch('/api/admin/courtesy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:s.id,days})});const j=await r.json() as {error?:string};if(!r.ok)throw Error(j.error||'Não foi possível salvar.');setToast(days===0?'Cortesia removida de '+s.name+'.':'Cortesia liberada para '+s.name+'.');await load()}catch(e){setToast((e as Error).message)}finally{setBusy('')}}
  async function setPrice(s:Subscriber,value:string|null){const price=value===null?null:Math.round(Number(value.replace(/\./g,'').replace(',','.'))*100);if(price!==null&&!(price>0)){setToast('Informe o valor, por exemplo 19,90.');return}setBusy(s.id);try{const r=await fetch('/api/admin/custom-price',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:s.id,price})});const j=await r.json() as {error?:string};if(!r.ok)throw Error(j.error||'Não foi possível salvar.');setToast(price===null?s.name+' volta a pagar pela faixa de clientes.':'Preço especial salvo para '+s.name+'.');await load()}catch(e){setToast((e as Error).message)}finally{setBusy('')}}
+ async function inspect(s:Subscriber){setBusy(s.id);try{const r=await fetch('/api/admin/inspect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:s.id,mode:'ro'})});const j=await r.json() as {error?:string};if(!r.ok)throw Error(j.error||'Não foi possível abrir.');location.href='/'}catch(e){setToast((e as Error).message);setBusy('')}}
+ async function resetPassword(s:Subscriber){if(!window.confirm('Gerar uma senha provisória para '+s.name+'? A senha atual deixa de funcionar e ele sai de todos os aparelhos.'))return;setBusy(s.id);try{const r=await fetch('/api/admin/reset-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:s.id})});const j=await r.json() as {password?:string;error?:string};if(!r.ok||!j.password)throw Error(j.error||'Não foi possível gerar.');window.prompt('Senha provisória de '+s.name+' ('+s.email+'). Copie e envie para ele; ela não será mostrada de novo.',j.password)}catch(e){setToast((e as Error).message)}finally{setBusy('')}}
  async function runCharges(){setBusy('charges');try{const r=await fetch('/api/admin/auto-charge',{method:'POST'});const j=await r.json() as {users?:number;sent?:number;failed?:number;error?:string};if(!r.ok)throw Error(j.error||'Não foi possível executar.');setToast(`${j.sent} enviada(s), ${j.failed} com falha, ${j.users} usuário(s) com cobrança automática.`)}catch(e){setToast((e as Error).message)}finally{setBusy('')}}
  const q=query.trim().toLowerCase();const list=(users||[]).filter(s=>!q||s.name.toLowerCase().includes(q)||s.email.includes(q));
  const count=(f:(s:Subscriber)=>boolean)=>(users||[]).filter(f).length;
@@ -42,7 +44,7 @@ export default function AdminPanel(){
   {!users&&!error&&<p className="auth-note">Carregando…</p>}
   {users&&!list.length&&<p className="auth-note">Nenhum assinante encontrado.</p>}
   <div className="admin-list">{list.map(s=>{const st=situation(s);return <section className="admin-row" key={s.id}>
-   <div className="admin-who"><strong>{s.name}</strong><span>{s.email}</span><small>Cadastro em {date(s.createdAt)} · {s.clients} cliente{s.clients===1?'':'s'}</small></div>
+   <div className="admin-who"><strong>{s.name}</strong><span>{s.email}</span><small>Cadastro em {date(s.createdAt)} · {s.clients} cliente{s.clients===1?'':'s'} · Total pago {brl(s.charges.filter(c=>PAID.includes(c.status)).reduce((t,c)=>t+c.value,0))}</small></div>
    <span className={'admin-tag '+st.tone}>{st.label}</span>
    <div className="admin-activity"><span className={'admin-dot'+(s.online?' on':'')}/>{s.online?<strong>Online agora</strong>:<span>Offline</span>}<span>Último acesso: {s.lastSeen?when(s.lastSeen):'nunca'}</span><span>Tempo de uso: {s.lastSeen?duration(s.activeSeconds):'—'}</span></div>
    <div className="admin-finance">{s.finance?<>
@@ -57,6 +59,7 @@ export default function AdminPanel(){
    </>:<p>Ainda não cadastrou nada na carteira.</p>}</div>
    {!s.admin&&<div className="admin-actions"><Gift size={14}/><span>Cortesia:</span>{OPTIONS.map(([label,days])=><button key={label} disabled={!!busy} onClick={()=>grant(s,days)}>{label}</button>)}{s.courtesyUntil&&<button className="remove" disabled={!!busy} onClick={()=>grant(s,0)}>Remover</button>}</div>}
    {!s.admin&&<SpecialPrice s={s} busy={!!busy} onSave={setPrice}/>}
+   {!s.admin&&<div className="admin-actions"><button disabled={!!busy} onClick={()=>inspect(s)}><Eye size={13}/> Inspecionar conta</button><button disabled={!!busy} onClick={()=>resetPassword(s)}><KeyRound size={13}/> Redefinir senha</button><span>Login: {s.email}</span></div>}
   </section>})}</div>
   {toast&&<div className="admin-toast" role="status" onClick={()=>setToast('')}>{toast}</div>}
  </main>;

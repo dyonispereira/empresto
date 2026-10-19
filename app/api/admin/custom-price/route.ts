@@ -1,4 +1,4 @@
-import {getUser} from '../../../auth';
+import {getRealUser as getUser} from '../../../auth';
 import {admin} from '../../../../lib/billing';
 import {setCustomPrice} from '../../../../lib/pricing';
 // price: monthly value in cents, or null to go back to the price by number of clients.
