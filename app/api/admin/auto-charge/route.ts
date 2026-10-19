@@ -1,4 +1,4 @@
-import {getUser} from '../../../auth';
+import {getRealUser as getUser} from '../../../auth';
 import {admin} from '../../../../lib/billing';
 import {runAutoCharges} from '../../../../lib/auto-charge';
 // Runs today's automatic WhatsApp charges on demand, the same job the 9h cron runs. Already-sent installments are skipped.

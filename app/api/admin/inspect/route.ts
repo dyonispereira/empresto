@@ -1,0 +1,6 @@
+import {env} from 'cloudflare:workers';
+import {getRealUser} from '../../../auth';
+import {admin} from '../../../../lib/billing';
+import {userById,inspectCookie} from '../../../../lib/auth';
+// Starts (or switches the mode of) an inspection; each start is recorded with who, whom and when.
+export async function POST(req:Request){const u=await getRealUser();if(!u||!admin(u.email))return Response.json({error:'Acesso restrito ao administrador.'},{status:403});if(req.headers.get('origin')!==new URL(req.url).origin)return Response.json({error:'Origem inválida'},{status:403});try{const {userId,mode}=await req.json() as {userId:unknown;mode:unknown};if(typeof userId!=='string'||(mode!=='ro'&&mode!=='rw'))throw Error('Dados inválidos.');const target=await userById(userId);if(!target||admin(target.email))throw Error('Assinante não encontrado.');await env.DB!.prepare('INSERT INTO admin_inspections(id,admin_email,target,mode,started_at) VALUES(?,?,?,?,?)').bind(crypto.randomUUID(),u.email,userId,mode,new Date().toISOString()).run();return Response.json({ok:true},{headers:{'Set-Cookie':inspectCookie(userId,mode),'Cache-Control':'no-store'}})}catch(e){return Response.json({error:(e as Error).message},{status:400})}}

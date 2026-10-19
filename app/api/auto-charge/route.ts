@@ -1,4 +1,4 @@
-import {getUser} from '../../auth';
+import {getUser,readOnlyBlock} from '../../auth';
 import {autoChargeSettings,setAutoCharge,setConnection,autoChargeLog} from '../../../lib/auto-charge';
 import {isPartnerConfigured,createInstance,pairingCode,whatsappStatus,whatsappQr,disconnectWhatsApp,sendWhatsAppWithCopy} from '../../../lib/whatsapp';
 import {readPortfolio} from '../../../lib/persistence';
@@ -16,6 +16,7 @@ async function state(owner:string,email:string){await syncOwn(owner,email);const
 export async function GET(){const u=await getUser();if(!u)return Response.json({error:'Não autorizado'},{status:401});return Response.json(await state(u.userId,u.email),{headers})}
 export async function POST(req:Request){
  const u=await getUser();if(!u)return Response.json({error:'Não autorizado'},{status:401});
+ const blocked=readOnlyBlock(u);if(blocked)return blocked;
  if(req.headers.get('origin')!==new URL(req.url).origin)return Response.json({error:'Origem inválida'},{status:403});
  try{
   const input=await req.json() as {action?:string;enabled?:unknown;phone?:unknown};

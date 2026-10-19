@@ -1,6 +1,10 @@
 import {env} from 'cloudflare:workers';
-export type User={userId:string;email:string;displayName:string};
+export type User={userId:string;email:string;displayName:string;inspecting?:{admin:string;readOnly:boolean}};
 export const SESSION_COOKIE='__Host-empresto_session';
+// Set while the administrator inspects a subscriber's account: `<userId>.ro` (read only) or `<userId>.rw`.
+export const INSPECT_COOKIE='__Host-empresto_inspect';
+export const inspectCookie=(userId:string,mode:'ro'|'rw')=>`${INSPECT_COOKIE}=${userId}.${mode}; Path=/; Max-Age=7200; HttpOnly; Secure; SameSite=Lax`;
+export const clearedInspectCookie=`${INSPECT_COOKIE}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax`;
 export const SESSION_DAYS=30;
 // Cloudflare Workers caps PBKDF2 at 100k iterations.
 const ITERATIONS=100000,MAX_FAILURES=5,LOCK_MINUTES=15;
@@ -40,6 +44,9 @@ export async function userFromToken(token:string|null|undefined):Promise<User|nu
  if(!row||new Date(row.expires_at).getTime()<=Date.now())return null;
  return {userId:row.id,email:row.email,displayName:row.name||row.email};
 }
+export async function userById(id:string):Promise<User|null>{const row=await env.DB!.prepare('SELECT id,email,name FROM users WHERE id=?').bind(id).first<{id:string;email:string;name:string}>();return row?{userId:row.id,email:row.email,displayName:row.name||row.email}:null;}
+// Temporary password the administrator hands to a subscriber who lost theirs; it signs them out everywhere.
+export async function resetPassword(userId:string){const alphabet='abcdefghjkmnpqrstuvwxyz23456789';const bytes=crypto.getRandomValues(new Uint8Array(10));const password=Array.from(bytes,b=>alphabet[b%alphabet.length]).join('');const r=await env.DB!.prepare('UPDATE users SET password_hash=?,failed_logins=0,locked_until=NULL WHERE id=?').bind(await hashPassword(password),userId).run();if(r.meta.changes!==1)throw Error('Assinante não encontrado.');await env.DB!.prepare('DELETE FROM sessions WHERE user_id=?').bind(userId).run();return password;}
 export async function signOut(token:string|null|undefined){if(token)await env.DB!.prepare('DELETE FROM sessions WHERE id=?').bind(await sha256(token)).run();}
 export function readCookie(header:string|null,name=SESSION_COOKIE){for(const part of (header||'').split(';')){const i=part.indexOf('=');if(i>0&&part.slice(0,i).trim()===name)return part.slice(i+1).trim();}return null;}
 export function sessionCookie(token:string){return `${SESSION_COOKIE}=${token}; Path=/; Max-Age=${SESSION_DAYS*86400}; HttpOnly; Secure; SameSite=Lax`;}

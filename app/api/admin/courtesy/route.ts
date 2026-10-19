@@ -1,4 +1,4 @@
-import {getUser} from '../../../auth';
+import {getRealUser as getUser} from '../../../auth';
 import {admin} from '../../../../lib/billing';
 import {setCourtesy} from '../../../../lib/admin';
 // days: positive number of days, null for no expiry, 0 to remove the courtesy.
