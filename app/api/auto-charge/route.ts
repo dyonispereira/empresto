@@ -10,7 +10,7 @@ import {env} from 'cloudflare:workers';
 const ownInstance=(email:string)=>admin(email)&&env.ZAPI_INSTANCE_ID&&env.ZAPI_INSTANCE_TOKEN?{instanceId:env.ZAPI_INSTANCE_ID,token:env.ZAPI_INSTANCE_TOKEN,clientToken:null}:null;
 const headers={'Cache-Control':'no-store'};
 // The Z-API token never goes back to the browser; only whether a connection exists and its WhatsApp status.
-async function state(owner:string,email:string){const s=await autoChargeSettings(owner);let connected=false;if(s.connection)connected=await whatsappStatus(s.connection).catch(()=>false);return {enabled:s.enabled,available:isPartnerConfigured()||!!s.connection||!!ownInstance(email),hasConnection:!!s.connection,connected,log:await autoChargeLog(owner)};}
+async function state(owner:string,email:string){const s=await autoChargeSettings(owner);let connected=false,statusError:string|undefined;if(s.connection)connected=await whatsappStatus(s.connection).catch(e=>{statusError=(e as Error).message;return false});return {enabled:s.enabled,available:isPartnerConfigured()||!!s.connection||!!ownInstance(email),hasConnection:!!s.connection,connected,statusError,log:await autoChargeLog(owner)};}
 export async function GET(){const u=await getUser();if(!u)return Response.json({error:'Não autorizado'},{status:401});return Response.json(await state(u.userId,u.email),{headers})}
 export async function POST(req:Request){
  const u=await getUser();if(!u)return Response.json({error:'Não autorizado'},{status:401});
