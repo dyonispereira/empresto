@@ -5,8 +5,8 @@ const compile=p=>ts.transpile(fs.readFileSync(p,'utf8'),{target:ts.ScriptTarget.
 const uri=s=>'data:text/javascript;base64,'+Buffer.from(s).toString('base64');
 const modelUri=uri(compile('lib/model.ts'));
 const zodPath=new URL('../node_modules/zod/index.js',import.meta.url).href;
-const pixUri=uri(compile('lib/pix.ts'));
-const validationUri=uri(compile('lib/validation.ts').replace(/from ['"]\.\/pix['"]/g,'from '+JSON.stringify(pixUri)).replace("'./model'",JSON.stringify(modelUri)).replace('"./model"',JSON.stringify(modelUri)).replace("'zod'",JSON.stringify(zodPath)).replace('"zod"',JSON.stringify(zodPath)));
+const pixUri=uri(compile('lib/pix.ts'));const themesUri=uri(compile('lib/themes.ts'));
+const validationUri=uri(compile('lib/validation.ts').replace(/from ['"]\.\/pix['"]/g,'from '+JSON.stringify(pixUri)).replace(/from ['"]\.\/themes['"]/g,'from '+JSON.stringify(themesUri)).replace("'./model'",JSON.stringify(modelUri)).replace('"./model"',JSON.stringify(modelUri)).replace("'zod'",JSON.stringify(zodPath)).replace('"zod"',JSON.stringify(zodPath)));
 const m=await import(modelUri),v=await import(validationUri);
 const c={id:'c',name:'Cliente',phone:'',email:'',active:true,address:'',geo:'',group:'',notes:'',photo:''};
 const d={clients:[c],loans:[],cashEntries:[],reminders:[]};m.recordCash(d,'opening',2000000,'Aporte');
