@@ -39,10 +39,11 @@ export default function ClientReport({data,owner}:{data:Portfolio;owner:string})
   download(workbook([
    {name:'Resumo',widths:[32,20],rows:[[{bold:'Relatório Emprestô'}],[owner],['Gerado em '+date],[],...summary.map(([k,t,m]):Cell[]=>[k,m===null?Number(t):{money:m}])]},
    {name:'Clientes',widths:[28,16,26,30,14,10,13,10,14,16,14,14,14,18,16],rows:[head.map(h=>({bold:h})),...rows.map((r):Cell[]=>[r.c.name,r.c.phone,r.c.email,r.c.address,r.c.group,r.c.active?'Ativo':'Inativo',r.status,r.loans,{money:r.lent},{money:r.contracted},{money:r.received},{money:r.open},{money:r.late},r.nextDue?fmt(r.nextDue):'',r.nextDue?{money:r.nextAmount}:''])]},
+   {name:'Cadastro',widths:[28,18,28,36,24,14,10,40],rows:[['Nome','Celular','E-mail','Endereço','Geolocalização','Grupo','Situação','Observações'].map(h=>({bold:h})),...rows.map((r):Cell[]=>[r.c.name,r.c.phone,r.c.email,r.c.address,r.c.geo,r.c.group,r.c.active?'Ativo':'Inativo',r.c.notes])]},
   ]),`relatorio-empresto-${today()}.xlsx`);
  };
  return <section className="panel client-report print-area">
-  <div className="panel-header"><div><h2>Relatório</h2><p>Todos os clientes, seus dados e o resumo financeiro. Gerado em {date}.</p></div>
+  <div className="panel-header"><div><h2>Relatório</h2><p>Resumo financeiro, valores por cliente e dados cadastrais de todos os clientes, ativos e inativos. Gerado em {date}.</p></div>
    <div className="report-actions no-print"><button className="btn secondary" onClick={excel}><FileSpreadsheet size={15}/>Baixar Excel</button><button className="btn secondary" onClick={()=>window.print()}><FileText size={15}/>Baixar PDF</button></div></div>
   <div className="report-body"><p className="print-only report-owner">{owner} · Emprestô · {date}</p>
   <h3>Resumo financeiro</h3>
@@ -50,6 +51,9 @@ export default function ClientReport({data,owner}:{data:Portfolio;owner:string})
   <h3>Clientes ({rows.length})</h3>
   {rows.length?<div className="report-table-wrap"><table className="report-table"><thead><tr><th>Cliente</th><th>Contato</th><th>Situação</th><th>Contratos</th><th>Emprestado</th><th>Recebido</th><th>Em aberto</th><th>Em atraso</th><th>Próximo vencimento</th></tr></thead>
    <tbody>{rows.map(r=><tr key={r.c.id}><td data-label="Cliente"><strong>{r.c.name}</strong>{!r.c.active&&<small> (inativo)</small>}{r.c.address&&<small className="report-sub">{r.c.address}</small>}</td><td data-label="Contato">{r.c.phone||'—'}{r.c.email&&<small className="report-sub">{r.c.email}</small>}</td><td data-label="Situação"><span className={'report-status s-'+(r.status==='Em atraso'?'late':r.status==='Em dia'?'ok':'done')}>{r.status}</span></td><td data-label="Contratos">{r.loans}</td><td data-label="Emprestado">{brl(r.lent)}</td><td data-label="Recebido">{brl(r.received)}</td><td data-label="Em aberto">{brl(r.open)}</td><td data-label="Em atraso">{r.late?brl(r.late):'—'}</td><td data-label="Próximo vencimento">{r.nextDue?<>{fmt(r.nextDue)}<small className="report-sub">{brl(r.nextAmount)}</small></>:'—'}</td></tr>)}</tbody></table></div>:<p>Nenhum cliente cadastrado ainda.</p>}
+  <h3 className="report-break">Dados cadastrais ({rows.length} clientes: {rows.filter(r=>r.c.active).length} ativos, {rows.filter(r=>!r.c.active).length} inativos)</h3>
+  {rows.length>0&&<div className="report-table-wrap"><table className="report-table register-table"><thead><tr><th>Nome</th><th>Celular</th><th>E-mail</th><th>Endereço</th><th>Grupo</th><th>Situação</th><th>Observações</th></tr></thead>
+   <tbody>{rows.map(r=><tr key={r.c.id}><td data-label="Nome"><strong>{r.c.name}</strong></td><td data-label="Celular">{r.c.phone||'—'}</td><td data-label="E-mail">{r.c.email||'—'}</td><td data-label="Endereço">{r.c.address||'—'}{r.c.geo&&<small className="report-sub">{r.c.geo}</small>}</td><td data-label="Grupo">{r.c.group||'—'}</td><td data-label="Situação"><span className={'report-status '+(r.c.active?'s-ok':'s-done')}>{r.c.active?'Ativo':'Inativo'}</span></td><td data-label="Observações">{r.c.notes||'—'}</td></tr>)}</tbody></table></div>}
   <p className="report-note no-print">No PDF, escolha “Salvar como PDF” na tela de impressão.</p></div>
  </section>;
 }
