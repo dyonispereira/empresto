@@ -30,16 +30,31 @@ export function reportSummary(d:Portfolio,rows:Row[]){
   ...(w.configured?[['Dinheiro disponível',null,w.available] as [string,null,number]]:[]),
  ] as [string,string|null,number|null][];
 }
+// The same columns feed the Excel sheets and the on-screen/PDF tables, so both always carry the same information.
+type Col=[string,(r:Row)=>Cell,number];
+const money=(v:number):Cell=>({money:v});
+const clientCols:Col[]=[['Cliente',r=>r.c.name,28],['Telefone',r=>r.c.phone,16],['E-mail',r=>r.c.email,26],['Endereço',r=>r.c.address,30],['Grupo',r=>r.c.group,14],['Cadastro',r=>r.c.active?'Ativo':'Inativo',10],['Situação',r=>r.status,13],['Contratos',r=>r.loans,10],['Emprestado',r=>money(r.lent),14],['Total contratado',r=>money(r.contracted),16],['Recebido',r=>money(r.received),14],['Em aberto',r=>money(r.open),14],['Em atraso',r=>money(r.late),14],['Próximo vencimento',r=>r.nextDue?fmt(r.nextDue):'',18],['Valor do próximo',r=>r.nextDue?money(r.nextAmount):'',16]];
+const registerCols:Col[]=[['Nome',r=>r.c.name,28],['Celular',r=>r.c.phone,18],['E-mail',r=>r.c.email,28],['Endereço',r=>r.c.address,36],['Geolocalização',r=>r.c.geo,24],['Grupo',r=>r.c.group,14],['Situação',r=>r.c.active?'Ativo':'Inativo',10],['Observações',r=>r.c.notes,40]];
+const pill:Record<string,string>={'Em atraso':'s-late','Em dia':'s-ok','Ativo':'s-ok','Quitado':'s-done','Sem contrato':'s-done','Inativo':'s-done'};
+function show(v:Cell,head:string){
+ if(v===null||v==='')return '—';
+ if(typeof v==='object')return 'money' in v?brl(v.money):v.bold;
+ if(typeof v==='string'&&(head==='Situação'||head==='Cadastro'))return <span className={'report-status '+(pill[v]||'s-done')}>{v}</span>;
+ return v;
+}
+function Table({cols,rows}:{cols:Col[];rows:Row[]}){
+ return <div className="report-table-wrap"><table className="report-table"><thead><tr>{cols.map(c=><th key={c[0]}>{c[0]}</th>)}</tr></thead>
+  <tbody>{rows.map(r=><tr key={r.c.id}>{cols.map(([h,f],i)=>{const v=f(r);return <td key={h} data-label={h} className={typeof v==='number'||(v!==null&&typeof v==='object'&&'money' in v)?'num':undefined}>{i===0?<strong>{String(v)}</strong>:show(v,h)}</td>})}</tr>)}</tbody></table></div>;
+}
 function download(blob:Blob,name:string){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
 
 export default function ClientReport({data,owner}:{data:Portfolio;owner:string}){
  const rows=reportRows(data),summary=reportSummary(data,rows),date=fmt(today());
  const excel=()=>{
-  const head=['Cliente','Telefone','E-mail','Endereço','Grupo','Cadastro','Situação','Contratos','Emprestado','Total contratado','Recebido','Em aberto','Em atraso','Próximo vencimento','Valor do próximo'];
   download(workbook([
    {name:'Resumo',widths:[32,20],rows:[[{bold:'Relatório Emprestô'}],[owner],['Gerado em '+date],[],...summary.map(([k,t,m]):Cell[]=>[k,m===null?Number(t):{money:m}])]},
-   {name:'Clientes',widths:[28,16,26,30,14,10,13,10,14,16,14,14,14,18,16],rows:[head.map(h=>({bold:h})),...rows.map((r):Cell[]=>[r.c.name,r.c.phone,r.c.email,r.c.address,r.c.group,r.c.active?'Ativo':'Inativo',r.status,r.loans,{money:r.lent},{money:r.contracted},{money:r.received},{money:r.open},{money:r.late},r.nextDue?fmt(r.nextDue):'',r.nextDue?{money:r.nextAmount}:''])]},
-   {name:'Cadastro',widths:[28,18,28,36,24,14,10,40],rows:[['Nome','Celular','E-mail','Endereço','Geolocalização','Grupo','Situação','Observações'].map(h=>({bold:h})),...rows.map((r):Cell[]=>[r.c.name,r.c.phone,r.c.email,r.c.address,r.c.geo,r.c.group,r.c.active?'Ativo':'Inativo',r.c.notes])]},
+   {name:'Clientes',widths:clientCols.map(c=>c[2]),rows:[clientCols.map(c=>({bold:c[0]})),...rows.map(r=>clientCols.map(c=>c[1](r)))]},
+   {name:'Cadastro',widths:registerCols.map(c=>c[2]),rows:[registerCols.map(c=>({bold:c[0]})),...rows.map(r=>registerCols.map(c=>c[1](r)))]},
   ]),`relatorio-empresto-${today()}.xlsx`);
  };
  return <section className="panel client-report print-area">
@@ -49,11 +64,9 @@ export default function ClientReport({data,owner}:{data:Portfolio;owner:string})
   <h3>Resumo financeiro</h3>
   <div className="report-summary">{summary.map(([k,t,m])=><div key={k}><small>{k}</small><strong>{m===null?t:brl(m)}</strong></div>)}</div>
   <h3>Clientes ({rows.length})</h3>
-  {rows.length?<div className="report-table-wrap"><table className="report-table"><thead><tr><th>Cliente</th><th>Contato</th><th>Situação</th><th>Contratos</th><th>Emprestado</th><th>Recebido</th><th>Em aberto</th><th>Em atraso</th><th>Próximo vencimento</th></tr></thead>
-   <tbody>{rows.map(r=><tr key={r.c.id}><td data-label="Cliente"><strong>{r.c.name}</strong>{!r.c.active&&<small> (inativo)</small>}{r.c.address&&<small className="report-sub">{r.c.address}</small>}</td><td data-label="Contato">{r.c.phone||'—'}{r.c.email&&<small className="report-sub">{r.c.email}</small>}</td><td data-label="Situação"><span className={'report-status s-'+(r.status==='Em atraso'?'late':r.status==='Em dia'?'ok':'done')}>{r.status}</span></td><td data-label="Contratos">{r.loans}</td><td data-label="Emprestado">{brl(r.lent)}</td><td data-label="Recebido">{brl(r.received)}</td><td data-label="Em aberto">{brl(r.open)}</td><td data-label="Em atraso">{r.late?brl(r.late):'—'}</td><td data-label="Próximo vencimento">{r.nextDue?<>{fmt(r.nextDue)}<small className="report-sub">{brl(r.nextAmount)}</small></>:'—'}</td></tr>)}</tbody></table></div>:<p>Nenhum cliente cadastrado ainda.</p>}
+  {rows.length?<Table cols={clientCols} rows={rows}/>:<p>Nenhum cliente cadastrado ainda.</p>}
   <h3 className="report-break">Dados cadastrais ({rows.length} clientes: {rows.filter(r=>r.c.active).length} ativos, {rows.filter(r=>!r.c.active).length} inativos)</h3>
-  {rows.length>0&&<div className="report-table-wrap"><table className="report-table register-table"><thead><tr><th>Nome</th><th>Celular</th><th>E-mail</th><th>Endereço</th><th>Grupo</th><th>Situação</th><th>Observações</th></tr></thead>
-   <tbody>{rows.map(r=><tr key={r.c.id}><td data-label="Nome"><strong>{r.c.name}</strong></td><td data-label="Celular">{r.c.phone||'—'}</td><td data-label="E-mail">{r.c.email||'—'}</td><td data-label="Endereço">{r.c.address||'—'}{r.c.geo&&<small className="report-sub">{r.c.geo}</small>}</td><td data-label="Grupo">{r.c.group||'—'}</td><td data-label="Situação"><span className={'report-status '+(r.c.active?'s-ok':'s-done')}>{r.c.active?'Ativo':'Inativo'}</span></td><td data-label="Observações">{r.c.notes||'—'}</td></tr>)}</tbody></table></div>}
+  {rows.length>0&&<Table cols={registerCols} rows={rows}/>}
   <p className="report-note no-print">No PDF, escolha “Salvar como PDF” na tela de impressão.</p></div>
  </section>;
 }
