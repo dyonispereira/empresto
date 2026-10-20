@@ -172,3 +172,30 @@
 .install-bar img{border-radius:11px;flex:none}.install-bar>div{flex:1;min-width:0}.install-bar strong{display:block;font-size:14px}.install-bar small{display:block;font-size:12px;margin-top:2px;line-height:1.3}
 .install-go{display:inline-flex;align-items:center;gap:6px;background:#184f3e;color:#fff;border-radius:10px;padding:10px 14px;font-weight:650;font-size:13px;flex:none}.install-x{color:var(--muted);padding:6px;display:flex;flex:none}
 @media(max-width:760px){body:has(.bottom-nav) .install-bar{bottom:calc(80px + env(safe-area-inset-bottom))}}
+/* "Ver dia" in Próximos recebimentos */
+.day-picker{position:relative;display:inline-flex;align-items:center;gap:6px;color:#4c7c61;background:#f4f7f3;padding:8px 10px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer}
+.day-picker input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.day-picker input::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:100%;height:100%;cursor:pointer}
+.day-totals{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 24px 12px}.day-totals>div{background:#f6f8f6;border-radius:9px;padding:10px 12px}.day-totals small{display:block;font-size:10px}.day-totals b{font-size:15px}
+/* Excluir cliente */
+.wipe-confirm{display:flex;gap:10px;align-items:flex-start;margin:0 27px;font-size:12px;color:#8c4a40;line-height:1.5}.wipe-confirm input{margin-top:3px;flex:none}
+.modal>.wipe-confirm+.form-actions{margin-top:16px}
+/* Cor do app */
+.accent-picker{display:flex;flex-wrap:wrap;gap:10px}
+.accent-swatch{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:999px;padding:7px 14px 7px 7px;font-size:12px;background:#fff}
+.accent-swatch i{width:22px;height:22px;border-radius:50%;background:var(--sw)}
+.accent-swatch.active{border-color:var(--sw);box-shadow:0 0 0 2px var(--sw) inset;font-weight:700}
+[data-accent-swatch=verde]{--sw:#1a624b}[data-accent-swatch=azul]{--sw:#1f4f8f}[data-accent-swatch=roxo]{--sw:#5b3fa0}[data-accent-swatch=grafite]{--sw:#2f3a40}[data-accent-swatch=vinho]{--sw:#8a2c3b}[data-accent-swatch=dourado]{--sw:#a67c1a}[data-accent-swatch=rosa]{--sw:#b03a74}
+.shell[data-accent=azul]{--ac:#1f4f8f;--ac-d:#173d70;--ac-s:#e8f0fb;--ac-t:#1f4f8f}
+.shell[data-accent=roxo]{--ac:#5b3fa0;--ac-d:#46307c;--ac-s:#f0ebfa;--ac-t:#5b3fa0}
+.shell[data-accent=grafite]{--ac:#2f3a40;--ac-d:#1f272b;--ac-s:#eceff1;--ac-t:#2f3a40}
+.shell[data-accent=vinho]{--ac:#8a2c3b;--ac-d:#6d2230;--ac-s:#f8eaed;--ac-t:#8a2c3b}
+.shell[data-accent=dourado]{--ac:#a67c1a;--ac-d:#86630f;--ac-s:#fbf3df;--ac-t:#86630f}
+.shell[data-accent=rosa]{--ac:#b03a74;--ac-d:#8e2c5d;--ac-s:#fbe9f2;--ac-t:#b03a74}
+.shell:not([data-accent=verde]) .btn{background:var(--ac)}.shell:not([data-accent=verde]) .btn:hover{background:var(--ac-d)}
+.shell:not([data-accent=verde]) .btn.secondary{background:#fff;color:#5b6a60}.shell:not([data-accent=verde]) .btn.secondary:hover{background:#f4f6f5}.shell:not([data-accent=verde]) .btn.danger-btn{background:#a95446}
+.shell:not([data-accent=verde]) .brand-icon,.shell:not([data-accent=verde]) .check-btn.checked,.shell:not([data-accent=verde]) .progress-track>div,.shell:not([data-accent=verde]) .toast{background:var(--ac)}
+.shell:not([data-accent=verde]) .hero-metric{background:var(--ac);border-color:var(--ac)}
+.shell:not([data-accent=verde]) .nav-item.active,.shell:not([data-accent=verde]) .bottom-nav button.active{color:var(--ac-t);background:var(--ac-s)}
+.shell:not([data-accent=verde]) .text-btn:not(.danger),.shell:not([data-accent=verde]) .day-picker{color:var(--ac-t)}
+.shell:not([data-accent=verde]) .day-picker{background:var(--ac-s)}

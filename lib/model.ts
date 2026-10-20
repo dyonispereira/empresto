@@ -6,7 +6,10 @@ export type Collateral={kind:'Moto'|'Veículo';name:string;marketValue:number;do
 export type Loan={reversals?:{receipt:Receipt;reason:string;date:string}[];collateral?:Collateral;id:string;clientId:string;name:string;capital:number;rate:number;date:string;frequency:string;installments:Installment[];receipts:Receipt[];edits?:{date:string;reason:string;changes:{id:string;fromAmount:number;toAmount:number;fromDate:string;toDate:string}[]}[];history:{date:string;from:string;to:string;reason:string}[]};
 export type Reminder={id:string;clientId:string;title:string;date:string;done:boolean};
 export type CashEntry={id:string;date:string;amount:number;kind:'opening'|'deposit'|'withdrawal'|'correction';notes:string};
-export type Portfolio={pixSettings?:PixSettings;cashEntries?:CashEntry[];clients:Client[];loans:Loan[];reminders:Reminder[]};
+export type Portfolio={settings?:{accent?:Accent};pixSettings?:PixSettings;cashEntries?:CashEntry[];clients:Client[];loans:Loan[];reminders:Reminder[]};
+// App colour themes picked in Ajustes; 'verde' is the original look.
+export const accents=['verde','azul','roxo','grafite','vinho','dourado','rosa'] as const;
+export type Accent=typeof accents[number];
 export const empty:Portfolio={clients:[],loans:[],reminders:[]};
 export const frequencies=['Pagamento único','Semanal','Quinzenal (15 dias)','Cada duas semanas (14 dias)','Mensal','Diariamente','Diário (segunda a sexta)','Diário (segunda a sábado)','Trimestral','Semestral','Anual'];
 export const today=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
