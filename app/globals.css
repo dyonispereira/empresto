@@ -236,10 +236,10 @@
 .report-summary small{opacity:.7;font-size:12px}
 .report-summary strong{font-size:17px}
 .report-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.report-table{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
+.report-table{width:100%;border-collapse:collapse;font-size:13px;min-width:1100px}
 .report-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;opacity:.7;padding:8px 10px;border-bottom:1px solid color-mix(in srgb,currentColor 18%,transparent)}
 .report-table td{padding:10px;border-bottom:1px solid color-mix(in srgb,currentColor 10%,transparent);vertical-align:top}
-.report-table td:nth-child(n+4),.report-table th:nth-child(n+4){text-align:right;white-space:nowrap}
+.report-table td.num{text-align:right;white-space:nowrap}
 .report-sub{display:block;opacity:.7;font-size:12px;margin-top:2px}
 .report-status{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
 .report-status.s-late{background:#fde2df;color:#b3261e}
@@ -257,7 +257,11 @@
  .print-area .panel-header{background:transparent!important;padding:0!important}
  .print-area .no-print{display:none!important}
  .print-area .print-only{display:block}
- .report-table{min-width:0;font-size:11px}
+ .report-table{min-width:0;font-size:8.5px}
+ .report-table th{font-size:7.5px;padding:5px 4px}
+ .report-table td{padding:5px 4px;white-space:nowrap;vertical-align:top}
+ .report-table td:is([data-label="Cliente"],[data-label="Nome"],[data-label="Endereço"],[data-label="Observações"]){white-space:normal}
+ .report-table .report-status{font-size:inherit;padding:1px 5px}
  .report-table-wrap{overflow:visible}
  .report-table tr{break-inside:avoid}
  .report-summary{grid-template-columns:repeat(4,1fr)}
@@ -277,6 +281,4 @@
  .report-table td:not(:first-child)::before{content:attr(data-label);display:block;font-size:11px;opacity:.65;text-transform:uppercase;letter-spacing:.03em}
 }
 @media print{.report-body{padding:0}}
-.register-table td:nth-child(n+4),.register-table th:nth-child(n+4){text-align:left;white-space:normal}
-.register-table td:nth-child(6){white-space:nowrap}
 @media print{.report-break{break-before:page}}
