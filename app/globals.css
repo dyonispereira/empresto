@@ -217,6 +217,7 @@
 .shell.themed :is(.btn:not(.secondary):not(.danger-btn),.hero-metric,.check-btn.checked,.toast),.shell.themed :is(.btn:not(.secondary):not(.danger-btn),.hero-metric,.check-btn.checked,.toast) :is(div,span,strong,b,small,p,button,svg){color:var(--t-accentink)}
 .shell.themed .hero-metric .metric-top>span{background:#0000001a}
 .shell.themed .progress-track>div{background:var(--t-accent)}
+.shell.themed .installment-edit{background:var(--t-soft);border-color:var(--t-line)}.shell.themed .installment-edit :is(span,svg){color:var(--t-ink)}.shell.themed .installment-edit:hover{background:var(--t-accent)}.shell.themed .installment-edit:hover :is(span,svg){color:var(--t-accentink)}
 .shell.themed :is(.red-text,.danger,.text-btn.danger,.danger-metric strong,.danger-metric small,.logout-btn,.logout-top){color:var(--t-bad)}
 .shell.themed :is(.green-text,.text-btn:not(.danger)){color:var(--t-good)}
 .shell.themed :is(.status,.good,.late,.neutral,.admin-tag,.nav-item b){color:#333}

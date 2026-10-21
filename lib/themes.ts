@@ -1,4 +1,5 @@
 // Whole-app colour themes chosen in Ajustes › Cor do app: 8 gradients and 8 flat colours, plus the original look.
+// Buttons use a light tint of the theme colour (not plain white) so they stand out on dark backgrounds.
 // Each theme is a set of CSS variables applied on .shell.themed (see the "Temas" block in globals.css).
 export const themeIds=['padrao','grad-preto','grad-azul','grad-verde','grad-rosa','grad-roxo','grad-vermelho','grad-branco','grad-laranja','liso-preto','liso-azul','liso-verde','liso-rosa','liso-roxo','liso-vermelho','liso-branco','liso-laranja'] as const;
 export type ThemeId=typeof themeIds[number];
@@ -9,12 +10,12 @@ export const themeOf=(v?:string):ThemeId=>(themeIds as readonly string[]).includ
 
 type Base={label:string;head:string;head2:string;bg:string;bg2:string;card:string;line:string;ink:string;muted:string;accent:string;accentInk:string;dark:boolean};
 const base:Record<string,Base>={
- preto:{label:'Preto',head:'#2b2b2b',head2:'#000000',bg:'#141414',bg2:'#000000',card:'#1f1f1f',line:'#3a3a3a',ink:'#ffffff',muted:'#c4c4c4',accent:'#ffffff',accentInk:'#111111',dark:true},
- azul:{label:'Azul',head:'#1e88e5',head2:'#0047ab',bg:'#0a3a85',bg2:'#06224f',card:'#0e489e',line:'#3a73c9',ink:'#ffffff',muted:'#cfe2ff',accent:'#ffffff',accentInk:'#0047ab',dark:true},
- verde:{label:'Verde',head:'#43a047',head2:'#127812',bg:'#0f5c12',bg2:'#073609',card:'#156f18',line:'#3f9a42',ink:'#ffffff',muted:'#d6f5cc',accent:'#ffffff',accentInk:'#127812',dark:true},
+ preto:{label:'Preto',head:'#2b2b2b',head2:'#000000',bg:'#141414',bg2:'#000000',card:'#1f1f1f',line:'#3a3a3a',ink:'#ffffff',muted:'#c4c4c4',accent:'#ffc94d',accentInk:'#1a1300',dark:true},
+ azul:{label:'Azul',head:'#1e88e5',head2:'#0047ab',bg:'#0a3a85',bg2:'#06224f',card:'#0e489e',line:'#3a73c9',ink:'#ffffff',muted:'#cfe2ff',accent:'#6cc0ff',accentInk:'#04214d',dark:true},
+ verde:{label:'Verde',head:'#43a047',head2:'#127812',bg:'#0f5c12',bg2:'#073609',card:'#156f18',line:'#3f9a42',ink:'#ffffff',muted:'#d6f5cc',accent:'#8fe08a',accentInk:'#063308',dark:true},
  rosa:{label:'Rosa',head:'#ec407a',head2:'#c2185b',bg:'#f8bbd0',bg2:'#f48fb1',card:'#fbd3e1',line:'#e48aa9',ink:'#5c0d2e',muted:'#a3214f',accent:'#d81b60',accentInk:'#ffffff',dark:false},
- roxo:{label:'Roxo',head:'#9c27b0',head2:'#4a0072',bg:'#4f0070',bg2:'#2a003d',card:'#5f0a85',line:'#8a3bb0',ink:'#ffffff',muted:'#ead0f7',accent:'#ffffff',accentInk:'#7b00b0',dark:true},
- vermelho:{label:'Vermelho',head:'#e53935',head2:'#7f0000',bg:'#5c0000',bg2:'#330000',card:'#701010',line:'#a33a3a',ink:'#ffffff',muted:'#ffd3d3',accent:'#ffffff',accentInk:'#a00000',dark:true},
+ roxo:{label:'Roxo',head:'#9c27b0',head2:'#4a0072',bg:'#4f0070',bg2:'#2a003d',card:'#5f0a85',line:'#8a3bb0',ink:'#ffffff',muted:'#ead0f7',accent:'#e0a3f5',accentInk:'#2b0040',dark:true},
+ vermelho:{label:'Vermelho',head:'#e53935',head2:'#7f0000',bg:'#5c0000',bg2:'#330000',card:'#701010',line:'#a33a3a',ink:'#ffffff',muted:'#ffd3d3',accent:'#ff9e8f',accentInk:'#3d0000',dark:true},
  branco:{label:'Branco',head:'#ffffff',head2:'#d9d9d9',bg:'#f2f2f2',bg2:'#dcdcdc',card:'#ffffff',line:'#d6d6d6',ink:'#1a1a1a',muted:'#5f5f5f',accent:'#1a1a1a',accentInk:'#ffffff',dark:false},
  laranja:{label:'Laranja',head:'#ffa726',head2:'#ef6c00',bg:'#c45a00',bg2:'#8a3a00',card:'#d06a0c',line:'#f5c518',ink:'#ffffff',muted:'#ffe066',accent:'#ffb300',accentInk:'#3a2000',dark:true},
 };
