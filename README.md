@@ -15,7 +15,7 @@ React 19, TypeScript, Vinext/Vite, Cloudflare Workers, D1/SQLite e R2. Login pr�
 
 ## Publicação (Cloudflare Workers)
 
-`wrangler.jsonc` define o Worker `empresto`, o banco D1 `empresto-db` e o bucket R2 `empresto-arquivos`, criados automaticamente no primeiro deploy (o R2 precisa estar ativado na conta). As tabelas são criadas no primeiro acesso (`lib/schema-setup.ts`). Conecte o repositório em Workers & Pages com build `pnpm run build` e deploy `npx wrangler deploy`. Segredos a configurar no painel: `ASAAS_API_KEY`, `ASAAS_WEBHOOK_TOKEN` e `EMPRESTO_ADMIN_EMAIL`. O webhook do Asaas aponta para `/api/billing/webhook` com o mesmo token.
+`wrangler.jsonc` define o Worker `empresto`, o banco D1 `empresto-db` e o bucket R2 `empresto-arquivos`, criados automaticamente no primeiro deploy (o R2 precisa estar ativado na conta). As tabelas são criadas no primeiro acesso (`lib/schema-setup.ts`). Conecte o repositório em Workers & Pages com build `pnpm run build` e deploy `npx wrangler deploy`. Segredos a configurar no painel: `ASAAS_API_KEY`, `ASAAS_WEBHOOK_TOKEN`, `EMPRESTO_ADMIN_EMAIL` e `DATA_ENCRYPTION_KEY` (cifra os tokens do Z-API no banco; não troque depois de definida, ou as conexões de WhatsApp precisam ser refeitas). O webhook do Asaas aponta para `/api/billing/webhook` com o mesmo token.
 
 A conta com o e-mail de `EMPRESTO_ADMIN_EMAIL` não paga mensalidade; crie essa conta logo após o primeiro deploy, antes de divulgar o endereço.
 

@@ -9,6 +9,7 @@ export const clearedInspectCookie=`${INSPECT_COOKIE}=; Path=/; Max-Age=0; HttpOn
 export const SESSION_DAYS=30;
 // Cloudflare Workers caps PBKDF2 at 100k iterations.
 const ITERATIONS=100000,MAX_FAILURES=5,LOCK_MINUTES=15;
+const LOGIN_FAILED=`E-mail ou senha incorretos. Após ${MAX_FAILURES} tentativas erradas, o acesso fica bloqueado por ${LOCK_MINUTES} minutos.`;
 const enc=new TextEncoder();
 const b64=(b:ArrayBuffer|Uint8Array)=>btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 const unb64=(s:string):Uint8Array<ArrayBuffer>=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
@@ -35,10 +36,14 @@ export async function signUp(input:{name:string;email:string;password:string;acc
 }
 export async function signIn(input:{email:string;password:string}){
  const email=normalizeEmail(input.email);const user=await env.DB!.prepare('SELECT * FROM users WHERE email=?').bind(email).first<UserRow>();
- if(user?.locked_until&&new Date(user.locked_until).getTime()>Date.now())throw Error(`Muitas tentativas. Tente de novo em ${LOCK_MINUTES} minutos.`);
+ // Same answer and same work for unknown, wrong and locked accounts, so nobody learns which e-mails have an account.
+ const locked=!!user?.locked_until&&new Date(user.locked_until).getTime()>Date.now();
  const ok=await verifyPassword(String(input.password||''),user?.password_hash||DUMMY_HASH);
- if(!user||!ok){if(user){const fails=user.failed_logins+1;await env.DB!.prepare('UPDATE users SET failed_logins=?,locked_until=? WHERE id=?').bind(fails>=MAX_FAILURES?0:fails,fails>=MAX_FAILURES?new Date(Date.now()+LOCK_MINUTES*6e4).toISOString():null,user.id).run();}throw Error('E-mail ou senha incorretos.');}
+ if(locked)throw Error(LOGIN_FAILED);
+ if(!user||!ok){if(user){const fails=user.failed_logins+1;await env.DB!.prepare('UPDATE users SET failed_logins=?,locked_until=? WHERE id=?').bind(fails>=MAX_FAILURES?0:fails,fails>=MAX_FAILURES?new Date(Date.now()+LOCK_MINUTES*6e4).toISOString():null,user.id).run();}throw Error(LOGIN_FAILED);}
  if(user.failed_logins||user.locked_until)await env.DB!.prepare('UPDATE users SET failed_logins=0,locked_until=NULL WHERE id=?').bind(user.id).run();
+ // Expired sessions are never used again; clear this person's leftovers while we are here.
+ await env.DB!.prepare('DELETE FROM sessions WHERE user_id=? AND expires_at<=?').bind(user.id,new Date().toISOString()).run();
  return createSession(user.id);
 }
 export async function userFromToken(token:string|null|undefined):Promise<User|null>{
