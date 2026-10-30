@@ -16,6 +16,7 @@ const STATEMENTS=[
  "CREATE TABLE IF NOT EXISTS admin_inspections(id TEXT PRIMARY KEY NOT NULL,admin_email TEXT NOT NULL,target TEXT NOT NULL,mode TEXT NOT NULL,started_at TEXT NOT NULL)",
  "CREATE TABLE IF NOT EXISTS auto_charge_log(owner TEXT NOT NULL,item TEXT NOT NULL,client TEXT NOT NULL,amount INTEGER NOT NULL,due_date TEXT NOT NULL,status TEXT NOT NULL,error TEXT,sent_at TEXT NOT NULL,PRIMARY KEY(owner,item))",
  "CREATE TABLE IF NOT EXISTS activity(user_id TEXT PRIMARY KEY NOT NULL,last_seen TEXT NOT NULL,active_seconds INTEGER DEFAULT 0 NOT NULL)",
+ "CREATE TABLE IF NOT EXISTS rate_limits(key TEXT PRIMARY KEY NOT NULL,count INTEGER NOT NULL,reset_at TEXT NOT NULL)",
 ];
 const COLUMNS=['ALTER TABLE subscriptions ADD COLUMN plan TEXT'];
 let ready:Promise<unknown>|null=null;

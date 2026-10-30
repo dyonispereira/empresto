@@ -2,11 +2,16 @@ import {env} from 'cloudflare:workers';
 import {type Portfolio,today,balance} from './model';
 import {whatsappCharge} from './pix';
 import {type ZapiConnection,sendWhatsAppWithCopy} from './whatsapp';
+import {seal,open,canSeal,isSealed} from './secret-box';
 type Row={enabled:number;zapi_instance:string|null;zapi_token:string|null;zapi_client_token:string|null};
-const connectionOf=(r:Row|null):ZapiConnection|null=>r?.zapi_instance&&r.zapi_token?{instanceId:r.zapi_instance,token:r.zapi_token,clientToken:r.zapi_client_token}:null;
-export async function autoChargeSettings(owner:string){const r=await env.DB!.prepare('SELECT enabled,zapi_instance,zapi_token,zapi_client_token FROM auto_charge WHERE user_id=?').bind(owner).first<Row>();return {enabled:!!r?.enabled,connection:connectionOf(r)};}
+// Z-API tokens are stored sealed (see secret-box) and opened only when a call needs them.
+const connectionOf=async(r:Row|null):Promise<ZapiConnection|null>=>r?.zapi_instance&&r.zapi_token?{instanceId:r.zapi_instance,token:(await open(r.zapi_token))!,clientToken:await open(r.zapi_client_token)}:null;
+export async function autoChargeSettings(owner:string){const r=await env.DB!.prepare('SELECT enabled,zapi_instance,zapi_token,zapi_client_token FROM auto_charge WHERE user_id=?').bind(owner).first<Row>();const connection=await connectionOf(r);
+ // Tokens saved before encryption was configured are sealed the first time they are read.
+ if(connection&&r?.zapi_token&&canSeal()&&!isSealed(r.zapi_token))await setConnection(owner,connection);
+ return {enabled:!!r?.enabled,connection};}
 export async function setAutoCharge(owner:string,enabled:boolean){await env.DB!.prepare('INSERT INTO auto_charge(user_id,enabled,updated_at) VALUES(?,?,?) ON CONFLICT(user_id) DO UPDATE SET enabled=excluded.enabled,updated_at=excluded.updated_at').bind(owner,enabled?1:0,new Date().toISOString()).run();}
-export async function setConnection(owner:string,c:ZapiConnection|null){await env.DB!.prepare('INSERT INTO auto_charge(user_id,enabled,zapi_instance,zapi_token,zapi_client_token,updated_at) VALUES(?,0,?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET zapi_instance=excluded.zapi_instance,zapi_token=excluded.zapi_token,zapi_client_token=excluded.zapi_client_token,updated_at=excluded.updated_at'+(c?'':',enabled=0')).bind(owner,c?.instanceId??null,c?.token??null,c?.clientToken??null,new Date().toISOString()).run();}
+export async function setConnection(owner:string,c:ZapiConnection|null){await env.DB!.prepare('INSERT INTO auto_charge(user_id,enabled,zapi_instance,zapi_token,zapi_client_token,updated_at) VALUES(?,0,?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET zapi_instance=excluded.zapi_instance,zapi_token=excluded.zapi_token,zapi_client_token=excluded.zapi_client_token,updated_at=excluded.updated_at'+(c?'':',enabled=0')).bind(owner,c?.instanceId??null,await seal(c?.token??null),await seal(c?.clientToken??null),new Date().toISOString()).run();}
 export async function autoChargeLog(owner:string){const {results}=await env.DB!.prepare('SELECT client,amount,due_date,status,error,sent_at FROM auto_charge_log WHERE owner=? ORDER BY sent_at DESC LIMIT 20').bind(owner).all();return results;}
 // Installments due on `date` that are still open, from active clients with a phone.
 export function dueOn(data:Portfolio,date=today()){
@@ -24,7 +29,7 @@ export async function runAutoCharges(){
  const {results}=await env.DB!.prepare('SELECT a.user_id AS owner,a.zapi_instance,a.zapi_token,a.zapi_client_token,a.enabled,p.data FROM auto_charge a JOIN portfolios p ON p.owner=a.user_id WHERE a.enabled=1 AND a.zapi_instance IS NOT NULL').all<Row&{owner:string;data:string}>();
  let sent=0,failed=0;
  for(const r of results){
-  const conn=connectionOf(r)!;let portfolio:Portfolio;try{portfolio=JSON.parse(r.data)}catch{continue}
+  let conn:ZapiConnection,portfolio:Portfolio;try{conn=(await connectionOf(r))!}catch(e){console.error('auto-charge: cannot open Z-API token',r.owner,(e as Error).message);continue}try{portfolio=JSON.parse(r.data)}catch{continue}
   const pix=portfolio.pixSettings;if(!pix?.key)continue;
   for(const item of dueOn(portfolio).slice(0,DAILY_LIMIT)){
    // Claim the installment; one that failed before (e.g. WhatsApp offline) is retried on the next run.
