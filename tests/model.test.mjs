@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import ts from 'typescript';
 import fs from 'node:fs';
 const src=fs.readFileSync('lib/model.ts','utf8');
-const {schedule,makeLoan,receive,balance,total,validatePortfolio,editInstallment,walletSummary,recordCash,setCollateral,collateralSummary,matchesLoanStatus}=await import('data:text/javascript;base64,'+Buffer.from(ts.transpile(src,{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022})).toString('base64'));
+const {schedule,makeLoan,receive,balance,total,validatePortfolio,editInstallment,walletSummary,recordCash,setCollateral,collateralSummary,matchesLoanStatus,periodRange,interestReceived,amountReceived}=await import('data:text/javascript;base64,'+Buffer.from(ts.transpile(src,{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022})).toString('base64'));
 assert.deepEqual(schedule('2026-01-31',3,'Mensal'),['2026-01-31','2026-02-28','2026-03-31']);
 assert.deepEqual(schedule('2026-10-23',3,'Diário (segunda a sexta)'),['2026-10-23','2026-10-26','2026-10-27']);
 assert.deepEqual(schedule('2026-10-24',3,'Diário (segunda a sábado)'),['2026-10-24','2026-10-26','2026-10-27']);
@@ -36,3 +36,22 @@ console.log('Passed: settled, ongoing, overdue and current filters, including ov
 
 const funds={clients:[],loans:[],reminders:[]};recordCash(funds,'opening',2000000,'Aporte de 20 mil');const outstanding=makeLoan({clientId:'c',name:'Em praça',capital:200000,rate:10,date:'2026-10-01',first:'2026-10-20',count:2,frequency:'Mensal'});funds.loans.push(outstanding);assert.equal(walletSummary(funds).funded,2000000);assert.equal(walletSummary(funds).principalOpen,200000);assert.equal(walletSummary(funds).available,1800000);receive(outstanding,110000,'Pix','2026-10-19','');assert.equal(walletSummary(funds).principalOpen,100000);assert.equal(walletSummary(funds).available,1900000);assert.equal(walletSummary(funds).receivedInterest,10000);recordCash(funds,'deposit',200000,'Aporte adicional');assert.equal(walletSummary(funds).funded,2200000);recordCash(funds,'correction',2000000,'Corrigir aporte total');assert.equal(walletSummary(funds).funded,2000000);assert.equal(walletSummary(funds).available,1900000);assert.equal(funds.cashEntries.at(-1).amount,-200000);assert.equal(funds.loans[0].receipts.length,1);
 console.log('Passed: exact 20,000 contribution, 2,000 outstanding / 18,000 available, interest separation, cumulative deposits and audited correction without changing loans.');
+
+assert.deepEqual(periodRange('month','2026-11-08'),{from:'2026-11-01',to:'2026-11-30'});
+assert.deepEqual(periodRange('last-month','2026-01-15'),{from:'2025-12-01',to:'2025-12-31'});
+assert.deepEqual(periodRange('last-month','2026-03-10'),{from:'2026-02-01',to:'2026-02-28'});
+assert.deepEqual(periodRange('30d','2026-11-08'),{from:'2026-10-10',to:'2026-11-08'});
+assert.deepEqual(periodRange('year','2026-11-08'),{from:'2026-01-01',to:'2026-12-31'});
+assert.deepEqual(periodRange('custom','2026-11-08','2026-10-31','2026-10-01'),{from:'2026-10-01',to:'2026-10-31'});
+assert.equal(periodRange('total','2026-11-08'),null);
+assert.deepEqual(periodRange('today','2026-11-08'),{from:'2026-11-08',to:'2026-11-08'});
+assert.deepEqual(periodRange('week','2026-11-08'),{from:'2026-11-02',to:'2026-11-08'});
+assert.deepEqual(periodRange('week','2026-11-02'),{from:'2026-11-02',to:'2026-11-08'});
+const pl=makeLoan({clientId:'c',name:'Período',capital:100000,rate:10,date:'2026-09-01',first:'2026-10-01',count:2,frequency:'Mensal'});
+receive(pl,55000,'Pix','2026-10-05','');receive(pl,55000,'Pix','2026-11-03','');
+assert.equal(interestReceived([pl],null),10000);
+assert.equal(interestReceived([pl],periodRange('month','2026-11-08')),5000);
+assert.equal(interestReceived([pl],periodRange('last-month','2026-11-08')),5000);
+assert.equal(interestReceived([pl],periodRange('custom','2026-11-08','2026-12-01','')),0);
+assert.equal(amountReceived([pl],periodRange('month','2026-11-08')),55000);assert.equal(amountReceived([pl],periodRange('today','2026-11-03')),55000);assert.equal(amountReceived([pl],null),110000);
+console.log('Passed: interest received by period (this month, last month, 30 days, year, custom, total).');
