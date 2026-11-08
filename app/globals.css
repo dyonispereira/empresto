@@ -289,3 +289,10 @@
 .period-dates label{min-width:0;display:flex;flex-direction:column;gap:2px;font-size:10px;color:var(--muted)}
 .period-dates input{min-width:0;width:100%;padding:4px 5px;border:1px solid var(--border);border-radius:7px;font-size:11px;background:transparent;color:inherit}
 .shell.themed .period-select,.shell.themed .period-dates input{background:var(--t-cardbg);border-color:var(--t-line);color:inherit}
+.cash-actions{display:flex;flex-wrap:wrap;gap:4px 14px}
+.group-totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;padding:0 24px 16px}
+@media(max-width:760px){.group-totals{padding:0 19px 14px}}
+.group-totals>div{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#f4f7f3}
+.group-totals small{font-size:10px;color:var(--muted)}
+.group-totals b{font-size:14px}
+.shell.themed .group-totals>div{background:var(--t-cardbg);border-color:var(--t-line)}

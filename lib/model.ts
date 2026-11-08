@@ -70,16 +70,22 @@ export function editInstallment(l:Loan,id:string,amount:number,date:string,reaso
 }
 
 // Períodos do card "Juros já recebidos". Datas no formato AAAA-MM-DD; null = desde o início.
-export const interestPeriods=[['total','Total (desde o início)'],['month','Este mês'],['last-month','Mês passado'],['30d','Últimos 30 dias'],['year','Este ano'],['custom','Escolher datas']] as const;
+export const interestPeriods=[['total','Total (desde o início)'],['today','Hoje'],['week','Esta semana'],['month','Este mês'],['last-month','Mês passado'],['30d','Últimos 30 dias'],['year','Este ano'],['custom','Escolher datas']] as const;
 export function periodRange(period:string,now=today(),from='',to=''):{from:string;to:string}|null{
  const [y,m]=now.split('-').map(Number);const pad=(n:number)=>String(n).padStart(2,'0');
  const lastDay=(yy:number,mm:number)=>new Date(Date.UTC(yy,mm,0)).getUTCDate();
+ if(period==='today')return {from:now,to:now};
+ if(period==='week'){const wd=(new Date(now+'T12:00:00Z').getUTCDay()+6)%7;const mon=shift(now,-wd);return {from:mon,to:shift(mon,6)};}
  if(period==='month')return {from:`${y}-${pad(m)}-01`,to:`${y}-${pad(m)}-${pad(lastDay(y,m))}`};
  if(period==='last-month'){const py=m===1?y-1:y,pm=m===1?12:m-1;return {from:`${py}-${pad(pm)}-01`,to:`${py}-${pad(pm)}-${pad(lastDay(py,pm))}`};}
  if(period==='30d')return {from:shift(now,-29),to:now};
  if(period==='year')return {from:`${y}-01-01`,to:`${y}-12-31`};
  if(period==='custom'){const a=from||'0000-01-01',b=to||'9999-12-31';return a<=b?{from:a,to:b}:{from:b,to:a};}
  return null;
+}
+// Tudo o que entrou no período (capital + juros), para comparar com o lucro (juros).
+export function amountReceived(loans:Loan[],range:{from:string;to:string}|null){
+ return loans.reduce((s,l)=>s+l.receipts.filter(r=>!range||(r.date>=range.from&&r.date<=range.to)).reduce((a,r)=>a+r.amount,0),0);
 }
 export function interestReceived(loans:Loan[],range:{from:string;to:string}|null){
  return loans.reduce((s,l)=>s+l.receipts.filter(r=>!range||(r.date>=range.from&&r.date<=range.to)).reduce((a,r)=>a+r.interest,0),0);
